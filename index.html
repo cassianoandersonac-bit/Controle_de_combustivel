@@ -266,6 +266,7 @@
           </div>
           <div class="field">
             <label>Colaborador</label>
+            <input type="text" id="a-colab-busca" placeholder="Buscar colaborador ou placa..." autocomplete="off" oninput="filterAbastColab()" style="margin-bottom:6px;">
             <select id="a-colab"></select>
           </div>
           <div class="field">
@@ -690,11 +691,19 @@ function removeColab(id){
 
 // ---------- ABASTECIMENTOS ----------
 function populateColabSelects(){
-  const sel = document.getElementById('a-colab');
   const filt = document.getElementById('l-colab-filter');
   const opts = state.colaboradores.map(c=>`<option value="${c.id}">${c.nome} (${c.placa})</option>`).join('');
-  sel.innerHTML = opts;
   filt.innerHTML = '<option value="todos">Todos os colaboradores</option>' + opts;
+  filterAbastColab();
+}
+
+function filterAbastColab(){
+  const busca = (document.getElementById('a-colab-busca').value||'').toLowerCase();
+  const sel = document.getElementById('a-colab');
+  const prevValue = sel.value;
+  const list = state.colaboradores.filter(c=> !busca || c.nome.toLowerCase().includes(busca) || c.placa.toLowerCase().includes(busca));
+  sel.innerHTML = list.map(c=>`<option value="${c.id}">${c.nome} (${c.placa})</option>`).join('');
+  if(list.some(c=>String(c.id)===prevValue)) sel.value = prevValue;
 }
 
 function addLancamento(){
@@ -712,7 +721,7 @@ function addLancamento(){
     obs: document.getElementById('a-obs').value.trim()
   });
   persist();
-  ['a-valor','a-liberado','a-obs'].forEach(f=>document.getElementById(f).value='');
+  ['a-valor','a-liberado','a-obs','a-colab-busca'].forEach(f=>document.getElementById(f).value='');
   renderAll();
   showToast('Abastecimento lançado');
 }
