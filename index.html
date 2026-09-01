@@ -8,17 +8,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#14171A;
-    --surface:#1C2024;
-    --surface-2:#22262B;
-    --border:#2C3238;
-    --text:#E8EAED;
-    --text-dim:#8B9299;
-    --steel:#5B84A0;
-    --forge:#D9822B;
-    --danger:#C0483E;
-    --ok:#4C8B5F;
-    --plate: repeating-linear-gradient(135deg, rgba(255,255,255,.015) 0 2px, transparent 2px 6px);
+    --bg:#F3F4F6;
+    --surface:#FFFFFF;
+    --surface-2:#EEF0F3;
+    --border:#D8DCE2;
+    --text:#1C222A;
+    --text-dim:#6B7480;
+    --steel:#3E6C8C;
+    --forge:#C46F1F;
+    --danger:#B23A30;
+    --ok:#3F7A52;
+    --plate: repeating-linear-gradient(135deg, rgba(0,0,0,.02) 0 2px, transparent 2px 6px);
   }
   *{box-sizing:border-box;}
   body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
@@ -44,18 +44,18 @@
   }
   .pill b{color:var(--text);}
   .btn{
-    background:var(--steel);color:#0B1215;border:none;padding:10px 16px;font-family:'Big Shoulders Display',sans-serif;
+    background:var(--steel);color:#FFFFFF;border:none;padding:10px 16px;font-family:'Big Shoulders Display',sans-serif;
     font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:13px;cursor:pointer;border-radius:2px;
     transition:background .15s;
   }
-  .btn:hover{background:#6f9ab8;}
+  .btn:hover{background:#345A76;}
   .btn.forge{background:var(--forge);}
-  .btn.forge:hover{background:#e79544;}
+  .btn.forge:hover{background:#A85E19;}
   .btn.small{padding:6px 10px;font-size:11px;}
   .btn.secondary{background:transparent;border:1px solid var(--border);color:var(--text-dim);}
   .btn.secondary:hover{color:var(--text);border-color:var(--steel);}
-  .btn.danger{background:transparent;border:1px solid var(--danger);color:#E08078;}
-  .btn.danger:hover{background:rgba(192,72,62,.15);}
+  .btn.danger{background:transparent;border:1px solid var(--danger);color:var(--danger);}
+  .btn.danger:hover{background:rgba(178,58,48,.1);}
 
   main{max-width:1320px;margin:0 auto;padding:22px 28px 60px;}
 
@@ -121,9 +121,16 @@
   tbody tr:hover{background:var(--surface-2);}
   .num{font-family:'IBM Plex Mono',monospace;text-align:right;}
   .badge{padding:3px 8px;border-radius:2px;font-size:10px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;white-space:nowrap;}
-  .badge-danger{background:rgba(192,72,62,.18);color:#E08078;}
-  .badge-warn{background:rgba(217,130,43,.18);color:var(--forge);}
-  .badge-ok{background:rgba(76,139,95,.18);color:#7FC292;}
+  .badge-danger{background:rgba(178,58,48,.14);color:#8C2E26;}
+  .badge-warn{background:rgba(196,111,31,.16);color:#8C5015;}
+  .badge-ok{background:rgba(63,122,82,.15);color:#2E5C3E;}
+  thead th.sortable{cursor:pointer;user-select:none;}
+  thead th.sortable:hover{color:var(--text);}
+  .lote-row{display:grid;grid-template-columns:2fr 1fr 1.4fr auto;gap:8px;align-items:center;margin-bottom:8px;}
+  .lote-row input{width:100%;padding:8px 10px;background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+    font-family:'Inter',sans-serif;font-size:13px;border-radius:2px;}
+  .lote-row button{background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;padding:8px 10px;cursor:pointer;}
+  .lote-row button:hover{color:var(--danger);border-color:var(--danger);}
   .row-actions{display:flex;gap:4px;justify-content:flex-end;white-space:nowrap;}
   .row-actions button{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:12px;padding:3px 6px;}
   .row-actions button:hover{color:var(--steel);}
@@ -159,7 +166,7 @@
     border-radius:2px;font-size:13px;display:none;z-index:60;
   }
   .toast.show{display:block;}
-  .toast.error{border-color:var(--danger);color:#E08078;}
+  .toast.error{border-color:var(--danger);color:var(--danger);}
 
   .archive-select{margin-bottom:18px;}
 
@@ -183,6 +190,10 @@
     <div class="header-right">
       <span class="pill">Mês: <b id="hdr-mes">—</b></span>
       <button class="btn secondary small" onclick="openConfigMes()">Editar mês</button>
+      <button class="btn secondary small" onclick="exportMesAtualCSV()">⬇ Baixar CSV do mês</button>
+      <button class="btn secondary small" onclick="exportBackupJSON()">⬇ Backup completo</button>
+      <button class="btn secondary small" onclick="document.getElementById('backup-input').click()">⬆ Restaurar backup</button>
+      <input type="file" id="backup-input" accept="application/json" style="display:none;" onchange="importBackupJSON(this.files[0])">
       <button class="btn forge small" onclick="openFecharMes()">Fechar mês</button>
     </div>
   </header>
@@ -225,6 +236,7 @@
 
     <div class="tabs">
       <button class="tab-btn active" data-tab="colab" onclick="switchTab('colab')">Colaboradores</button>
+      <button class="tab-btn" data-tab="calc" onclick="switchTab('calc')">Calculadora</button>
       <button class="tab-btn" data-tab="abast" onclick="switchTab('abast')">Abastecimentos</button>
       <button class="tab-btn" data-tab="hist" onclick="switchTab('hist')">Histórico de meses</button>
     </div>
@@ -234,16 +246,24 @@
       <div class="section-head">
         <div class="toolbar" style="margin-bottom:0;flex:1;">
           <input type="text" id="c-busca" placeholder="Buscar colaborador ou placa..." oninput="renderColab()">
+          <label style="display:flex;align-items:center;gap:6px;color:var(--text-dim);font-size:12.5px;white-space:nowrap;">
+            <input type="checkbox" id="c-sem-lanc" onchange="renderColab()"> Só sem abastecimento no mês
+          </label>
         </div>
         <button class="btn forge" onclick="openColabModal()">+ Novo colaborador</button>
       </div>
+      <div class="hint" id="c-alerta-sem-lanc" style="margin-bottom:12px;"></div>
       <div class="plate" style="overflow-x:auto;">
         <table>
           <thead><tr>
-            <th>Nº</th><th>Colaborador</th><th>Placa</th><th class="num">KM/dia</th><th class="num">KM/L</th>
-            <th class="num">Dias</th><th class="num">Faltas</th><th class="num">Bruto</th><th class="num">Desc. faltas</th>
-            <th class="num">Desc. mês ant.</th><th class="num">Extra</th><th class="num">Limite</th>
-            <th class="num">Usado</th><th class="num">Saldo</th><th></th>
+            <th>Nº</th><th class="sortable" onclick="sortColab('nome')">Colaborador<span id="sort-nome"></span></th>
+            <th>Placa</th><th class="num">KM/dia</th><th class="num">KM/L</th>
+            <th class="num sortable" onclick="sortColab('faltas')">Faltas<span id="sort-faltas"></span></th>
+            <th class="num">Bruto</th><th class="num">Desc. faltas</th>
+            <th class="num">Desc. mês ant.</th><th class="num">Extra</th>
+            <th class="num sortable" onclick="sortColab('limite')">Limite<span id="sort-limite"></span></th>
+            <th class="num sortable" onclick="sortColab('usado')">Usado<span id="sort-usado"></span></th>
+            <th class="num sortable" onclick="sortColab('saldo')">Saldo<span id="sort-saldo"></span></th><th></th>
           </tr></thead>
           <tbody id="colab-body"></tbody>
           <tfoot id="colab-foot"></tfoot>
@@ -252,6 +272,30 @@
       <div class="empty plate" id="colab-empty" style="display:none;">
         <div class="display">NENHUM COLABORADOR CADASTRADO</div>
         <div>Clique em "Novo colaborador" para começar.</div>
+      </div>
+    </div>
+
+    <!-- CALCULADORA -->
+    <div class="tab-panel" id="tab-calc">
+      <div class="section-head">
+        <div class="toolbar" style="margin-bottom:0;flex:1;">
+          <input type="text" id="k-busca" placeholder="Buscar colaborador ou placa..." oninput="renderCalc()">
+        </div>
+        <div class="hint">Edite KM/dia, KM/L ou dias direto na tabela. Use os botões para acrescentar/tirar um dia rápido.</div>
+      </div>
+      <div class="plate" style="overflow-x:auto;">
+        <table>
+          <thead><tr>
+            <th>Colaborador</th><th>Placa</th><th class="num">KM/dia</th><th class="num">KM/L</th>
+            <th>Dias individual</th><th class="num">Litros/mês</th><th class="num">Valor bruto</th><th class="num">Custo/dia</th>
+          </tr></thead>
+          <tbody id="calc-body"></tbody>
+          <tfoot id="calc-foot"></tfoot>
+        </table>
+      </div>
+      <div class="empty plate" id="calc-empty" style="display:none;">
+        <div class="display">NENHUM COLABORADOR CADASTRADO</div>
+        <div>Cadastre colaboradores na aba "Colaboradores" primeiro.</div>
       </div>
     </div>
 
@@ -266,8 +310,9 @@
           </div>
           <div class="field">
             <label>Colaborador</label>
-            <input type="text" id="a-colab-busca" placeholder="Buscar colaborador ou placa..." autocomplete="off" oninput="filterAbastColab()" style="margin-bottom:6px;">
-            <select id="a-colab"></select>
+            <input type="text" id="a-colab-busca" list="a-colab-list" placeholder="Digite o nome ou placa..." autocomplete="off" oninput="matchColabBusca()">
+            <input type="hidden" id="a-colab">
+            <datalist id="a-colab-list"></datalist>
           </div>
           <div class="field">
             <label>Valor (R$)</label>
@@ -284,7 +329,10 @@
         </div>
         <div class="add-actions">
           <span class="hint">O saldo do colaborador é recalculado automaticamente ao lançar um abastecimento.</span>
-          <button class="btn forge" onclick="addLancamento()">+ Adicionar</button>
+          <div style="display:flex;gap:8px;">
+            <button class="btn secondary" onclick="openLoteModal()">+ Lançar vários</button>
+            <button class="btn forge" onclick="addLancamento()">+ Adicionar</button>
+          </div>
         </div>
       </div>
 
@@ -373,6 +421,67 @@
     </div>
   </div>
 
+  <!-- MODAL LANÇAMENTO EM LOTE -->
+  <div class="overlay" id="overlay-lote">
+    <div class="modal plate" style="width:640px;">
+      <h2>Lançar vários abastecimentos</h2>
+      <div class="sub">Use quando vários colaboradores abastecem no mesmo dia. Data e "liberado por" valem para todas as linhas.</div>
+      <div class="row2">
+        <div class="field">
+          <label>Data</label>
+          <input type="date" id="lote-data">
+        </div>
+        <div class="field">
+          <label>Liberado por</label>
+          <input type="text" id="lote-liberado" placeholder="Ex: Anderson">
+        </div>
+      </div>
+      <div id="lote-rows"></div>
+      <button class="btn secondary small" onclick="addLoteRow()" style="margin-top:6px;">+ Adicionar linha</button>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeLoteModal()">Cancelar</button>
+        <button class="btn forge" onclick="saveLote()">Salvar todos</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR ABASTECIMENTO -->
+  <div class="overlay" id="overlay-lanc-edit">
+    <div class="modal plate">
+      <h2>Editar abastecimento</h2>
+      <input type="hidden" id="el-id">
+      <div class="row2">
+        <div class="field">
+          <label>Data</label>
+          <input type="date" id="el-data">
+        </div>
+        <div class="field">
+          <label>Valor (R$)</label>
+          <input type="number" step="0.01" id="el-valor">
+        </div>
+      </div>
+      <div class="field">
+        <label>Colaborador</label>
+        <input type="text" id="el-colab-busca" list="a-colab-list" placeholder="Digite o nome ou placa..." autocomplete="off" oninput="matchColabInput('el-colab-busca','el-colab')">
+        <input type="hidden" id="el-colab">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Liberado por</label>
+          <input type="text" id="el-liberado">
+        </div>
+        <div class="field">
+          <label>Observação</label>
+          <input type="text" id="el-obs">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeEditLancamento()">Cancelar</button>
+        <button class="btn forge" onclick="saveEditLancamento()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL CONFIG MES -->
   <div class="overlay" id="overlay-mes">
     <div class="modal plate" style="width:400px;">
@@ -410,6 +519,8 @@
 <script>
 const STORAGE_KEY = 'controle_combustivel_v1';
 
+const LEGACY_HISTORICO = {"Agosto/2026": {"lancamentos": [{"data": "2026-08-01", "nome": "Rafael Fernandes da Silva", "placa": "QGU7A32", "valor": 68.61, "liberadoPor": "", "obs": ""}, {"data": "2026-08-01", "nome": "Ivanilson Basílio de Sales", "placa": "HWK8G94", "valor": 98, "liberadoPor": "", "obs": ""}, {"data": "2026-08-01", "nome": "Leonardo Rodrigo da Silva", "placa": "QGA4I50", "valor": 43.12, "liberadoPor": "", "obs": ""}, {"data": "2026-08-03", "nome": "Leonardo Rodrigo da Silva", "placa": "QGA4I50", "valor": 39.2, "liberadoPor": "", "obs": ""}, {"data": "2026-08-03", "nome": "Rogério Francisco da Silva", "placa": "QGS7583", "valor": 88.24, "liberadoPor": "", "obs": ""}, {"data": "2026-08-03", "nome": "Samuel Francelino Paulo", "placa": "NOF6868", "valor": 78.49, "liberadoPor": "", "obs": ""}, {"data": "2026-08-03", "nome": "Erika de Souza Raujo Medeiros", "placa": "TSR4J48", "valor": 49, "liberadoPor": "", "obs": ""}, {"data": "2026-08-04", "nome": "João Vitor Angelo de Lima", "placa": "RQI7D80", "valor": 59.32, "liberadoPor": "", "obs": ""}, {"data": "2026-08-04", "nome": "Josenaldo da Silva Mariano", "placa": "MYW5B37", "valor": 49, "liberadoPor": "", "obs": ""}, {"data": "2026-08-04", "nome": "Jarrison Bertoldo Araujo Pereira", "placa": "TSZ0F86", "valor": 49, "liberadoPor": "", "obs": ""}, {"data": "2026-08-05", "nome": "Anderson Cassiano de Souza", "placa": "QGI4B16", "valor": 206.63, "liberadoPor": "", "obs": ""}, {"data": "2026-08-05", "nome": "Leonardo Pedro Simplicio", "placa": "QGS9920", "valor": 37.57, "liberadoPor": "", "obs": ""}, {"data": "2026-08-05", "nome": "Sandro de Oliveira Silva", "placa": "RQF6D94", "valor": 68.61, "liberadoPor": "", "obs": ""}, {"data": "2026-08-06", "nome": "Cleiton de Azevedo Tomaz", "placa": "QGV6F82", "valor": 76.09, "liberadoPor": "", "obs": ""}, {"data": "2026-08-06", "nome": "Renato José da Silva", "placa": "QGE5A36", "valor": 65.84, "liberadoPor": "", "obs": ""}, {"data": "2026-08-06", "nome": "Luiz Antonio Batista de Araujo", "placa": "NNW5086", "valor": 83.69, "liberadoPor": "", "obs": ""}, {"data": "2026-08-06", "nome": "Jeferson Natan Silva Dantas", "placa": "QG87I65", "valor": 49, "liberadoPor": "", "obs": ""}, {"data": "2026-08-07", "nome": "Edilson Adalto de Lima", "placa": "IOJ5J55", "valor": 68.6, "liberadoPor": "", "obs": ""}, {"data": "2026-08-08", "nome": "Alex Laranjeira da Cruz", "placa": "OJR6I98", "valor": 58.82, "liberadoPor": "", "obs": ""}, {"data": "2026-08-08", "nome": "Erika de Souza Raujo Medeiros", "placa": "TSR4J48", "valor": 39.2, "liberadoPor": "", "obs": ""}, {"data": "2026-08-09", "nome": "Ivanilson Basílio de Sales", "placa": "HWK8G94", "valor": 66.35, "liberadoPor": "", "obs": ""}, {"data": "2026-08-10", "nome": "Samuel Francelino Paulo", "placa": "NOF6868", "valor": 58.8, "liberadoPor": "", "obs": ""}, {"data": "2026-08-10", "nome": "Leonardo Pedro Simplicio", "placa": "QGS9920", "valor": 38.07, "liberadoPor": "", "obs": ""}, {"data": "2026-08-10", "nome": "Jarrison Bertoldo Araujo Pereira", "placa": "TSZ0F86", "valor": 39.2, "liberadoPor": "", "obs": ""}, {"data": "2026-08-11", "nome": "Rogério Francisco da Silva", "placa": "QGS7583", "valor": 68.6, "liberadoPor": "", "obs": ""}, {"data": "2026-08-12", "nome": "Rafael Fernandes da Silva", "placa": "QGU7A32", "valor": 68.6, "liberadoPor": "", "obs": ""}, {"data": "2026-08-12", "nome": "José Abdenego Filho", "placa": "RQK4E69", "valor": 24.76, "liberadoPor": "", "obs": ""}, {"data": "2026-08-13", "nome": "Jeferson Natan Silva Dantas", "placa": "QG87I65", "valor": 58.8, "liberadoPor": "", "obs": ""}, {"data": "2026-08-14", "nome": "Leonardo Pedro Simplicio", "placa": "QGS9920", "valor": 38.62, "liberadoPor": "", "obs": ""}, {"data": "2026-08-14", "nome": "Renato José da Silva", "placa": "QGE5A36", "valor": 65.98, "liberadoPor": "", "obs": ""}, {"data": "2026-08-14", "nome": "João Vitor Angelo de Lima", "placa": "RQI7D80", "valor": 61.13, "liberadoPor": "", "obs": ""}, {"data": "2026-08-15", "nome": "Rogério Francisco da Silva", "placa": "QGS7583", "valor": 32.34, "liberadoPor": "", "obs": ""}, {"data": "2026-08-15", "nome": "Samuel Francelino Paulo", "placa": "NOF6868", "valor": 57.82, "liberadoPor": "", "obs": ""}, {"data": "2026-08-17", "nome": "José Abdenego Filho", "placa": "RQK4E69", "valor": 26.14, "liberadoPor": "", "obs": ""}, {"data": "2026-08-17", "nome": "Erika de Souza Raujo Medeiros", "placa": "TSR4J48", "valor": 39.2, "liberadoPor": "", "obs": ""}, {"data": "2026-08-18", "nome": "Leonardo Pedro Simplicio", "placa": "QGS9920", "valor": 37.82, "liberadoPor": "", "obs": ""}, {"data": "2026-08-19", "nome": "Jarrison Bertoldo Araujo Pereira", "placa": "TSZ0F86", "valor": 29.4, "liberadoPor": "", "obs": ""}, {"data": "2026-08-20", "nome": "Revesson Daniel de Lima", "placa": "OWE3J19", "valor": 68.6, "liberadoPor": "", "obs": ""}, {"data": "2026-08-20", "nome": "Cleiton de Azevedo Tomaz", "placa": "QGV6F82", "valor": 78.5, "liberadoPor": "", "obs": ""}, {"data": "2026-08-21", "nome": "Rafael Fernandes da Silva", "placa": "QGU7A32", "valor": 68.6, "liberadoPor": "", "obs": ""}, {"data": "2026-08-21", "nome": "Samuel Francelino Paulo", "placa": "NOF6868", "valor": 58.8, "liberadoPor": "", "obs": ""}, {"data": "2026-08-22", "nome": "José Abdenego Filho", "placa": "RQK4E69", "valor": 18.62, "liberadoPor": "", "obs": ""}, {"data": "2026-08-22", "nome": "Luiz Antonio Batista de Araujo", "placa": "NNW5086", "valor": 19.6, "liberadoPor": "", "obs": ""}, {"data": "2026-08-22", "nome": "Renato José da Silva", "placa": "QGE5A36", "valor": 69.02, "liberadoPor": "", "obs": ""}, {"data": "2026-08-24", "nome": "Leonardo Pedro Simplicio", "placa": "QGS9920", "valor": 31.74, "liberadoPor": "", "obs": ""}, {"data": "2026-08-25", "nome": "Renato José da Silva", "placa": "QGE5A36", "valor": 7, "liberadoPor": "", "obs": ""}, {"data": "2026-08-25", "nome": "Jeferson Natan Silva Dantas", "placa": "QG87I65", "valor": 49.01, "liberadoPor": "", "obs": ""}, {"data": "2026-08-27", "nome": "Samuel Francelino Paulo", "placa": "NOF6868", "valor": 39.2, "liberadoPor": "", "obs": ""}, {"data": "2026-08-27", "nome": "Leonardo Pedro Simplicio", "placa": "QGS9920", "valor": 38.67, "liberadoPor": "", "obs": ""}, {"data": "2026-08-27", "nome": "Erika de Souza Raujo Medeiros", "placa": "TSR4J48", "valor": 39.2, "liberadoPor": "", "obs": ""}], "resumo": [{"nome": "Rafael Fernandes da Silva", "placa": "QGU7A32", "limite": 200.42, "usado": 205.81, "saldo": -5.39}, {"nome": "Ivanilson Basílio de Sales", "placa": "HWK8G94", "limite": 165.75, "usado": 164.35, "saldo": 1.4}, {"nome": "Leonardo Rodrigo da Silva", "placa": "QGA4I50", "limite": 70, "usado": 82.32, "saldo": -12.32}, {"nome": "Rogério Francisco da Silva", "placa": "QGS7583", "limite": 191.67, "usado": 189.18, "saldo": 2.49}, {"nome": "Samuel Francelino Paulo", "placa": "NOF6868", "limite": 216.59, "usado": 293.11, "saldo": -76.52}, {"nome": "Erika de Souza Raujo Medeiros", "placa": "TSR4J48", "limite": 173.24, "usado": 166.6, "saldo": 6.64}, {"nome": "João Vitor Angelo de Lima", "placa": "RQI7D80", "limite": 108.33, "usado": 120.45, "saldo": -12.12}, {"nome": "Josenaldo da Silva Mariano", "placa": "MYW5B37", "limite": 70, "usado": 49, "saldo": 21}, {"nome": "Jarrison Bertoldo Araujo Pereira", "placa": "TSZ0F86", "limite": 125.77, "usado": 117.6, "saldo": 8.17}, {"nome": "Anderson Cassiano de Souza", "placa": "QGI4B16", "limite": 207.63, "usado": 206.63, "saldo": 1}, {"nome": "Leonardo Pedro Simplicio", "placa": "QGS9920", "limite": 251.94, "usado": 222.49, "saldo": 29.45}, {"nome": "Sandro de Oliveira Silva", "placa": "RQF6D94", "limite": 70, "usado": 68.61, "saldo": 1.39}, {"nome": "Cleiton de Azevedo Tomaz", "placa": "QGV6F82", "limite": 165.53, "usado": 154.59, "saldo": 10.94}, {"nome": "Renato José da Silva", "placa": "QGE5A36", "limite": 209.11, "usado": 207.84, "saldo": 1.27}, {"nome": "Luiz Antonio Batista de Araujo", "placa": "NNW5086", "limite": 118.88, "usado": 103.29, "saldo": 15.59}, {"nome": "Jeferson Natan Silva Dantas", "placa": "QG87I65", "limite": 190.94, "usado": 156.81, "saldo": 34.13}, {"nome": "Edilson Adalto de Lima", "placa": "IOJ5J55", "limite": 70, "usado": 68.6, "saldo": 1.4}, {"nome": "Alex Laranjeira da Cruz", "placa": "OJR6I98", "limite": 70, "usado": 58.82, "saldo": 11.18}, {"nome": "José Abdenego Filho", "placa": "RQK4E69", "limite": 70, "usado": 69.52, "saldo": 0.48}, {"nome": "Revesson Daniel de Lima", "placa": "OWE3J19", "limite": 70, "usado": 68.6, "saldo": 1.4}], "totais": {"limite": 2815.8, "usado": 2774.22, "saldo": 41.58}}, "Julho/2026": {"lancamentos": [{"data": "2026-07-01", "nome": "Josenaldo da Silva Mariano", "placa": "MYW5B37", "valor": 19.6, "liberadoPor": "", "obs": ""}, {"data": "2026-07-01", "nome": "Rafael Fernandes da Silva", "placa": "QGU7A32", "valor": 68.61, "liberadoPor": "", "obs": ""}, {"data": "2026-07-01", "nome": "Rogério Francisco da Silva", "placa": "QGS7583", "valor": 58.8, "liberadoPor": "", "obs": ""}, {"data": "2026-07-01", "nome": "José Abdenego Filho", "placa": "RQK4E69", "valor": 29.12, "liberadoPor": "", "obs": ""}, {"data": "2026-07-01", "nome": "Samuel Francelino Paulo", "placa": "NOF6868", "valor": 83.1, "liberadoPor": "", "obs": ""}, {"data": "2026-07-01", "nome": "Leonardo Pedro Simplicio", "placa": "QGS9920", "valor": 35.04, "liberadoPor": "", "obs": ""}, {"data": "2026-07-01", "nome": "Erika de Souza Raujo Medeiros", "placa": "TSR4J48", "valor": 49.01, "liberadoPor": "", "obs": ""}, {"data": "2026-07-01", "nome": "Luiz Antonio Batista de Araujo", "placa": "NNW5086", "valor": 49.01, "liberadoPor": "", "obs": ""}, {"data": "2026-07-02", "nome": "João Vitor Angelo de Lima", "placa": "RQI7D80", "valor": 53.3, "liberadoPor": "", "obs": ""}, {"data": "2026-07-02", "nome": "Renato José da Silva", "placa": "QGE5A36", "valor": 82, "liberadoPor": "", "obs": ""}, {"data": "2026-07-03", "nome": "Anderson Cassiano de Souza", "placa": "QGI4B16", "valor": 147.02, "liberadoPor": "", "obs": ""}, {"data": "2026-07-03", "nome": "Edilson Adalto de Lima", "placa": "IOJ5J55", "valor": 68.61, "liberadoPor": "", "obs": ""}, {"data": "2026-07-04", "nome": "Leonardo Rodrigo da Silva", "placa": "QGA4I50", "valor": 43.12, "liberadoPor": "", "obs": ""}, {"data": "2026-07-04", "nome": "Sandro de Oliveira Silva", "placa": "RQF6D94", "valor": 68.58, "liberadoPor": "", "obs": ""}, {"data": "2026-07-06", "nome": "Leonardo Pedro Simplicio", "placa": "QGS9920", "valor": 39.71, "liberadoPor": "", "obs": ""}, {"data": "2026-07-06", "nome": "Samuel Francelino Paulo", "placa": "NOF6868", "valor": 59.94, "liberadoPor": "", "obs": ""}, {"data": "2026-07-06", "nome": "Rogério Francisco da Silva", "placa": "QGS7583", "valor": 76.45, "liberadoPor": "", "obs": ""}, {"data": "2026-07-06", "nome": "Jeferson Natan Silva Dantas", "placa": "QG87I65", "valor": 49.01, "liberadoPor": "", "obs": ""}, {"data": "2026-07-07", "nome": "José Abdenego Filho", "placa": "RQK4E69", "valor": 32.4, "liberadoPor": "", "obs": ""}, {"data": "2026-07-08", "nome": "Alex Laranjeira da Cruz", "placa": "OJR6I98", "valor": 68.61, "liberadoPor": "", "obs": ""}, {"data": "2026-07-08", "nome": "Erika de Souza Raujo Medeiros", "placa": "TSR4J48", "valor": 49.01, "liberadoPor": "", "obs": ""}, {"data": "2026-07-09", "nome": "João Vitor Angelo de Lima", "placa": "RQI7D80", "valor": 64.2, "liberadoPor": "", "obs": ""}, {"data": "2026-07-10", "nome": "Leonardo Pedro Simplicio", "placa": "QGS9920", "valor": 36.75, "liberadoPor": "", "obs": ""}, {"data": "2026-07-10", "nome": "José Abdenego Filho", "placa": "RQK4E69", "valor": 7.84, "liberadoPor": "", "obs": ""}, {"data": "2026-07-10", "nome": "Renato José da Silva", "placa": "QGE5A36", "valor": 68.61, "liberadoPor": "", "obs": ""}, {"data": "2026-07-11", "nome": "Jeferson Natan Silva Dantas", "placa": "QG87I65", "valor": 58.81, "liberadoPor": "", "obs": ""}, {"data": "2026-07-12", "nome": "Josenaldo da Silva Mariano", "placa": "MYW5B37", "valor": 49, "liberadoPor": "", "obs": ""}, {"data": "2026-07-12", "nome": "Leonardo Rodrigo da Silva", "placa": "QGA4I50", "valor": 19.6, "liberadoPor": "", "obs": ""}, {"data": "2026-07-13", "nome": "Samuel Francelino Paulo", "placa": "NOF6868", "valor": 49, "liberadoPor": "", "obs": ""}, {"data": "2026-07-13", "nome": "Rafael Fernandes da Silva", "placa": "QGU7A32", "valor": 68.61, "liberadoPor": "", "obs": ""}, {"data": "2026-07-15", "nome": "Leonardo Pedro Simplicio", "placa": "QGS9920", "valor": 14.58, "liberadoPor": "", "obs": ""}, {"data": "2026-07-15", "nome": "Renato José da Silva", "placa": "QGE5A36", "valor": 42.14, "liberadoPor": "", "obs": ""}, {"data": "2026-07-16", "nome": "Leonardo Pedro Simplicio", "placa": "QGS9920", "valor": 24.5, "liberadoPor": "", "obs": ""}, {"data": "2026-06-17", "nome": "Ivanilson Basílio de Sales", "placa": "HWK8G94", "valor": 143.69, "liberadoPor": "", "obs": ""}, {"data": "2026-07-18", "nome": "Samuel Francelino Paulo", "placa": "NOF6868", "valor": 49, "liberadoPor": "", "obs": ""}, {"data": "2026-07-19", "nome": "Leonardo Rodrigo da Silva", "placa": "QGA4I50", "valor": 19.6, "liberadoPor": "", "obs": ""}, {"data": "2026-07-20", "nome": "Erika de Souza Raujo Medeiros", "placa": "TSR4J48", "valor": 39.2, "liberadoPor": "", "obs": ""}, {"data": "2026-07-21", "nome": "Rafael Fernandes da Silva", "placa": "QGU7A32", "valor": 68.61, "liberadoPor": "", "obs": ""}, {"data": "2026-07-21", "nome": "Leonardo Pedro Simplicio", "placa": "QGS9920", "valor": 46.4, "liberadoPor": "", "obs": ""}, {"data": "2026-07-21", "nome": "Jarrison Bertoldo Araujo Pereira", "placa": "TSZ0F86", "valor": 29.4, "liberadoPor": "", "obs": ""}, {"data": "2026-07-22", "nome": "Samuel Francelino Paulo", "placa": "NOF6868", "valor": 49, "liberadoPor": "", "obs": ""}, {"data": "2026-07-22", "nome": "Revesson Daniel de Lima", "placa": "OWE3J19", "valor": 68.61, "liberadoPor": "", "obs": ""}, {"data": "2026-07-25", "nome": "Jeferson Natan Silva Dantas", "placa": "QG87I65", "valor": 34.3, "liberadoPor": "", "obs": ""}, {"data": "2026-07-25", "nome": "Jarrison Bertoldo Araujo Pereira", "placa": "TSZ0F86", "valor": 39.2, "liberadoPor": "", "obs": ""}, {"data": "2026-07-28", "nome": "Josenaldo da Silva Mariano", "placa": "MYW5B37", "valor": 19.6, "liberadoPor": "", "obs": ""}, {"data": "2026-07-29", "nome": "Luiz Antonio Batista de Araujo", "placa": "NNW5086", "valor": 14.7, "liberadoPor": "", "obs": ""}], "resumo": [{"nome": "Josenaldo da Silva Mariano", "placa": "MYW5B37", "limite": 70, "usado": 88.2, "saldo": -18.2}, {"nome": "Rafael Fernandes da Silva", "placa": "QGU7A32", "limite": 211.27, "usado": 205.83, "saldo": 5.44}, {"nome": "Rogério Francisco da Silva", "placa": "QGS7583", "limite": 137.09, "usado": 135.25, "saldo": 1.84}, {"nome": "José Abdenego Filho", "placa": "RQK4E69", "limite": 70, "usado": 69.36, "saldo": 0.64}, {"nome": "Samuel Francelino Paulo", "placa": "NOF6868", "limite": 260, "usado": 290.04, "saldo": -30.04}, {"nome": "Leonardo Pedro Simplicio", "placa": "QGS9920", "limite": 234.87, "usado": 237.52, "saldo": -2.65}, {"nome": "Erika de Souza Raujo Medeiros", "placa": "TSR4J48", "limite": 156.58, "usado": 137.22, "saldo": 19.36}, {"nome": "Luiz Antonio Batista de Araujo", "placa": "NNW5086", "limite": 119.63, "usado": 63.71, "saldo": 55.92}, {"nome": "João Vitor Angelo de Lima", "placa": "RQI7D80", "limite": 124.63, "usado": 117.5, "saldo": 7.13}, {"nome": "Renato José da Silva", "placa": "QGE5A36", "limite": 192.9, "usado": 192.75, "saldo": 0.15}, {"nome": "Anderson Cassiano de Souza", "placa": "QGI4B16", "limite": 147.35, "usado": 147.02, "saldo": 0.33}, {"nome": "Edilson Adalto de Lima", "placa": "IOJ5J55", "limite": 70, "usado": 68.61, "saldo": 1.39}, {"nome": "Leonardo Rodrigo da Silva", "placa": "QGA4I50", "limite": 70, "usado": 82.32, "saldo": -12.32}, {"nome": "Sandro de Oliveira Silva", "placa": "RQF6D94", "limite": 70, "usado": 68.58, "saldo": 1.42}, {"nome": "Jeferson Natan Silva Dantas", "placa": "QG87I65", "limite": 111.84, "usado": 142.12, "saldo": -30.28}, {"nome": "Alex Laranjeira da Cruz", "placa": "OJR6I98", "limite": 70, "usado": 68.61, "saldo": 1.39}, {"nome": "Ivanilson Basílio de Sales", "placa": "HWK8G94", "limite": 146.6, "usado": 143.69, "saldo": 2.91}, {"nome": "Jarrison Bertoldo Araujo Pereira", "placa": "TSZ0F86", "limite": 70, "usado": 68.6, "saldo": 1.4}, {"nome": "Revesson Daniel de Lima", "placa": "OWE3J19", "limite": 70, "usado": 68.61, "saldo": 1.39}], "totais": {"limite": 2402.76, "usado": 2395.54, "saldo": 7.22}}};
+
 function seedData(){
   const colaboradores = [
     ['Renato José da Silva','QGE5A36',46,35,null,9,0,0],
@@ -445,7 +556,7 @@ function seedData(){
     config:{ mesReferencia:'Setembro/2026', precoLitro:6.69, diasPadrao:23 },
     colaboradores,
     lancamentos:[],
-    historico:{},
+    historico: JSON.parse(JSON.stringify(LEGACY_HISTORICO)),
     nextColabId: colaboradores.length+1,
     nextLancId: 1
   };
@@ -456,7 +567,16 @@ let state = load();
 function load(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw) return JSON.parse(raw);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      // Migração: garante que quem já usava o app antes ganhe o histórico importado da planilha.
+      parsed.historico = parsed.historico || {};
+      Object.keys(LEGACY_HISTORICO).forEach(mes=>{
+        if(!parsed.historico[mes]) parsed.historico[mes] = JSON.parse(JSON.stringify(LEGACY_HISTORICO[mes]));
+      });
+      save(parsed);
+      return parsed;
+    }
   }catch(e){}
   const seeded = seedData();
   save(seeded);
@@ -501,6 +621,7 @@ function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='calc') renderCalc();
   if(tab==='abast') renderLancamentos();
   if(tab==='hist') renderHistorico();
 }
@@ -548,12 +669,56 @@ function renderMetrics(){
 }
 
 // ---------- COLABORADORES ----------
+let colabSort = {field:null, dir:1};
+
+function sortColab(field){
+  if(colabSort.field===field) colabSort.dir *= -1;
+  else { colabSort.field = field; colabSort.dir = 1; }
+  renderColab();
+}
+
+function sortIndicator(field){
+  return colabSort.field===field ? (colabSort.dir===1?' ▲':' ▼') : '';
+}
+
+function saldoCellHTML(saldo, limite){
+  if(saldo<0) return `<span class="badge badge-danger">${fmt(saldo)}</span>`;
+  if(limite>0 && saldo <= limite*0.2) return `<span class="badge badge-warn">${fmt(saldo)}</span>`;
+  return fmt(saldo);
+}
+
 function renderColab(){
   const busca = (document.getElementById('c-busca').value||'').toLowerCase();
+  const somenteSemLanc = document.getElementById('c-sem-lanc').checked;
   const body = document.getElementById('colab-body');
-  const list = state.colaboradores
+  let list = state.colaboradores
     .map(c=>({c, calc:calcColaborador(c)}))
     .filter(({c})=> !busca || c.nome.toLowerCase().includes(busca) || c.placa.toLowerCase().includes(busca));
+
+  const semLancTodos = state.colaboradores.filter(c=> !state.lancamentos.some(l=>l.colaboradorId===c.id));
+  if(somenteSemLanc) list = list.filter(({c})=> semLancTodos.includes(c));
+
+  const alerta = document.getElementById('c-alerta-sem-lanc');
+  alerta.textContent = semLancTodos.length
+    ? `⚠ ${semLancTodos.length} colaborador(es) sem abastecimento lançado este mês: ${semLancTodos.map(c=>c.nome).join(', ')}`
+    : '';
+
+  if(colabSort.field){
+    const key = colabSort.field;
+    list.sort((a,b)=>{
+      let va, vb;
+      if(key==='nome'){ va=a.c.nome.toLowerCase(); vb=b.c.nome.toLowerCase(); }
+      else if(key==='faltas'){ va=a.c.faltas||0; vb=b.c.faltas||0; }
+      else { va=a.calc[key]; vb=b.calc[key]; }
+      if(va<vb) return -1*colabSort.dir;
+      if(va>vb) return 1*colabSort.dir;
+      return 0;
+    });
+  }
+  ['nome','faltas','limite','usado','saldo'].forEach(f=>{
+    const el = document.getElementById('sort-'+f);
+    if(el) el.textContent = sortIndicator(f);
+  });
 
   document.getElementById('colab-empty').style.display = state.colaboradores.length===0 ? 'block':'none';
 
@@ -564,7 +729,6 @@ function renderColab(){
       <td class="mono">${c.placa}</td>
       <td class="num mono">${c.kmDia}</td>
       <td class="num mono">${c.kmL}</td>
-      <td class="num mono">${calc.dias}${c.diasIndividual?'':''}</td>
       <td class="num mono">${c.faltas||0}</td>
       <td class="num mono">${fmt(calc.bruto)}</td>
       <td class="num mono">${fmt(calc.desconto)}</td>
@@ -572,7 +736,7 @@ function renderColab(){
       <td class="num mono">${fmt(c.usoExtra||0)}</td>
       <td class="num mono"><b>${fmt(calc.limite)}</b></td>
       <td class="num mono">${fmt(calc.usado)}</td>
-      <td class="num mono">${calc.saldo<0?`<span class="badge badge-danger">${fmt(calc.saldo)}</span>`:fmt(calc.saldo)}</td>
+      <td class="num mono">${saldoCellHTML(calc.saldo, calc.limite)}</td>
       <td>
         <div class="row-actions">
           <button title="Editar" onclick="openColabModal(${c.id})">✎</button>
@@ -586,8 +750,8 @@ function renderColab(){
   const foot = document.getElementById('colab-foot');
   if(state.colaboradores.length){
     foot.innerHTML = `<tr class="totals-row">
-      <td colspan="6">TOTAIS</td>
-      <td class="num mono">${totCalcs.reduce((s,c)=>s+c.diasTrabalhados,0)===0?'':state.colaboradores.reduce((s,c)=>s+(c.faltas||0),0)}</td>
+      <td colspan="5">TOTAIS</td>
+      <td class="num mono">${state.colaboradores.reduce((s,c)=>s+(c.faltas||0),0)}</td>
       <td class="num mono">${fmt(totCalcs.reduce((s,c)=>s+c.bruto,0))}</td>
       <td class="num mono">${fmt(totCalcs.reduce((s,c)=>s+c.desconto,0))}</td>
       <td class="num mono">${fmt(state.colaboradores.reduce((s,c)=>s+(c.descontoMesAnterior||0),0))}</td>
@@ -689,29 +853,109 @@ function removeColab(id){
   showToast('Colaborador excluído');
 }
 
-// ---------- ABASTECIMENTOS ----------
-function populateColabSelects(){
-  const filt = document.getElementById('l-colab-filter');
-  const opts = state.colaboradores.map(c=>`<option value="${c.id}">${c.nome} (${c.placa})</option>`).join('');
-  filt.innerHTML = '<option value="todos">Todos os colaboradores</option>' + opts;
-  filterAbastColab();
+// ---------- CALCULADORA (KM / dias) ----------
+function renderCalc(){
+  const busca = (document.getElementById('k-busca').value||'').toLowerCase();
+  const body = document.getElementById('calc-body');
+  const list = state.colaboradores
+    .map(c=>({c, calc:calcColaborador(c)}))
+    .filter(({c})=> !busca || c.nome.toLowerCase().includes(busca) || c.placa.toLowerCase().includes(busca));
+
+  document.getElementById('calc-empty').style.display = state.colaboradores.length===0 ? 'block':'none';
+
+  body.innerHTML = list.map(({c,calc})=>`
+    <tr>
+      <td>${c.nome}</td>
+      <td class="mono">${c.placa}</td>
+      <td class="num"><input type="number" step="0.1" value="${c.kmDia}" style="width:80px;text-align:right;"
+          onchange="updateCalcField(${c.id},'kmDia',this.value)"></td>
+      <td class="num"><input type="number" step="0.1" value="${c.kmL}" style="width:70px;text-align:right;"
+          onchange="updateCalcField(${c.id},'kmL',this.value)"></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button class="btn secondary small" onclick="ajustarDias(${c.id},-1)" title="Tirar 1 dia">−</button>
+          <input type="number" value="${c.diasIndividual||''}" placeholder="${state.config.diasPadrao}" style="width:60px;text-align:center;"
+              onchange="updateCalcField(${c.id},'diasIndividual',this.value)">
+          <button class="btn secondary small" onclick="ajustarDias(${c.id},1)" title="Acrescentar 1 dia">+</button>
+        </div>
+      </td>
+      <td class="num mono">${calc.litros}</td>
+      <td class="num mono">${fmt(calc.bruto)}</td>
+      <td class="num mono">${fmt(calc.custoDia)}</td>
+    </tr>
+  `).join('');
+
+  const totCalcs = state.colaboradores.map(calcColaborador);
+  const foot = document.getElementById('calc-foot');
+  foot.innerHTML = state.colaboradores.length ? `<tr class="totals-row">
+    <td colspan="5">TOTAIS</td>
+    <td class="num mono">${totCalcs.reduce((s,c)=>s+c.litros,0).toFixed(2)}</td>
+    <td class="num mono">${fmt(totCalcs.reduce((s,c)=>s+c.bruto,0))}</td>
+    <td></td>
+  </tr>` : '';
 }
 
-function filterAbastColab(){
-  const busca = (document.getElementById('a-colab-busca').value||'').toLowerCase();
-  const sel = document.getElementById('a-colab');
-  const prevValue = sel.value;
-  const list = state.colaboradores.filter(c=> !busca || c.nome.toLowerCase().includes(busca) || c.placa.toLowerCase().includes(busca));
-  sel.innerHTML = list.map(c=>`<option value="${c.id}">${c.nome} (${c.placa})</option>`).join('');
-  if(list.some(c=>String(c.id)===prevValue)) sel.value = prevValue;
+function updateCalcField(id, field, value){
+  const c = state.colaboradores.find(x=>x.id===id);
+  if(!c) return;
+  if(field==='diasIndividual'){
+    c.diasIndividual = value==='' ? null : parseInt(value,10);
+  } else {
+    const n = parseFloat(value);
+    c[field] = isNaN(n) ? 0 : n;
+  }
+  persist();
+  renderCalc();
+  renderColab();
+  renderMetrics();
 }
+
+function ajustarDias(id, delta){
+  const c = state.colaboradores.find(x=>x.id===id);
+  if(!c) return;
+  const base = (c.diasIndividual && c.diasIndividual>0) ? c.diasIndividual : state.config.diasPadrao;
+  c.diasIndividual = Math.max(0, base+delta);
+  persist();
+  renderCalc();
+  renderColab();
+  renderMetrics();
+  showToast(`${c.nome}: ${c.diasIndividual} dias`);
+}
+
+// ---------- ABASTECIMENTOS ----------
+function colabLabel(c){ return `${c.nome} (${c.placa})`; }
+
+function populateColabSelects(){
+  const list = document.getElementById('a-colab-list');
+  const filt = document.getElementById('l-colab-filter');
+  list.innerHTML = state.colaboradores.map(c=>`<option value="${colabLabel(c)}">`).join('');
+  filt.innerHTML = '<option value="todos">Todos os colaboradores</option>' +
+    state.colaboradores.map(c=>`<option value="${c.id}">${colabLabel(c)}</option>`).join('');
+  matchColabBusca();
+}
+
+function matchColabInput(searchId, hiddenId){
+  const busca = (document.getElementById(searchId).value||'').trim().toLowerCase();
+  const hidden = document.getElementById(hiddenId);
+  const exact = state.colaboradores.find(c=>colabLabel(c).toLowerCase()===busca);
+  if(exact){ hidden.value = exact.id; return; }
+  const partial = busca ? state.colaboradores.find(c=>c.nome.toLowerCase().includes(busca) || c.placa.toLowerCase().includes(busca)) : null;
+  hidden.value = partial ? partial.id : '';
+}
+
+function matchColabBusca(){ matchColabInput('a-colab-busca','a-colab'); }
 
 function addLancamento(){
+  matchColabBusca();
   const data = document.getElementById('a-data').value;
   const colaboradorId = Number(document.getElementById('a-colab').value);
   const valor = parseFloat(document.getElementById('a-valor').value);
-  if(!data || !colaboradorId || isNaN(valor)){
-    showToast('Preencha data, colaborador e valor', true);
+  if(!data || !colaboradorId){
+    showToast('Digite um colaborador válido (escolha um da lista sugerida)', true);
+    return;
+  }
+  if(isNaN(valor)){
+    showToast('Preencha o valor', true);
     return;
   }
   state.lancamentos.push({
@@ -721,9 +965,105 @@ function addLancamento(){
     obs: document.getElementById('a-obs').value.trim()
   });
   persist();
-  ['a-valor','a-liberado','a-obs','a-colab-busca'].forEach(f=>document.getElementById(f).value='');
+  ['a-colab-busca','a-colab','a-valor','a-liberado','a-obs'].forEach(f=>document.getElementById(f).value='');
   renderAll();
   showToast('Abastecimento lançado');
+}
+
+// ---------- EDITAR ABASTECIMENTO ----------
+function openEditLancamento(id){
+  const l = state.lancamentos.find(x=>x.id===id);
+  if(!l) return;
+  const c = state.colaboradores.find(x=>x.id===l.colaboradorId);
+  document.getElementById('el-id').value = id;
+  document.getElementById('el-data').value = l.data;
+  document.getElementById('el-colab-busca').value = c ? colabLabel(c) : '';
+  document.getElementById('el-colab').value = l.colaboradorId;
+  document.getElementById('el-valor').value = l.valor;
+  document.getElementById('el-liberado').value = l.liberadoPor||'';
+  document.getElementById('el-obs').value = l.obs||'';
+  document.getElementById('overlay-lanc-edit').classList.add('open');
+}
+function closeEditLancamento(){ document.getElementById('overlay-lanc-edit').classList.remove('open'); }
+function saveEditLancamento(){
+  matchColabInput('el-colab-busca','el-colab');
+  const id = Number(document.getElementById('el-id').value);
+  const data = document.getElementById('el-data').value;
+  const colaboradorId = Number(document.getElementById('el-colab').value);
+  const valor = parseFloat(document.getElementById('el-valor').value);
+  if(!data || !colaboradorId){ showToast('Digite um colaborador válido', true); return; }
+  if(isNaN(valor)){ showToast('Preencha o valor', true); return; }
+  const idx = state.lancamentos.findIndex(x=>x.id===id);
+  if(idx<0) return;
+  state.lancamentos[idx] = {
+    ...state.lancamentos[idx],
+    data, colaboradorId, valor,
+    liberadoPor: document.getElementById('el-liberado').value.trim(),
+    obs: document.getElementById('el-obs').value.trim()
+  };
+  persist();
+  closeEditLancamento();
+  renderAll();
+  showToast('Abastecimento atualizado');
+}
+
+// ---------- LANÇAMENTO EM LOTE ----------
+let loteRowCounter = 0;
+function openLoteModal(){
+  document.getElementById('lote-data').valueAsDate = new Date();
+  document.getElementById('lote-liberado').value = '';
+  document.getElementById('lote-rows').innerHTML = '';
+  loteRowCounter = 0;
+  addLoteRow(); addLoteRow(); addLoteRow();
+  document.getElementById('overlay-lote').classList.add('open');
+}
+function closeLoteModal(){ document.getElementById('overlay-lote').classList.remove('open'); }
+
+function addLoteRow(){
+  const id = ++loteRowCounter;
+  const div = document.createElement('div');
+  div.className = 'lote-row';
+  div.id = 'lote-row-'+id;
+  div.innerHTML = `
+    <div>
+      <input type="text" id="lote-busca-${id}" list="a-colab-list" placeholder="Colaborador..." autocomplete="off" oninput="matchColabInput('lote-busca-${id}','lote-colab-${id}')">
+      <input type="hidden" id="lote-colab-${id}">
+    </div>
+    <input type="number" step="0.01" id="lote-valor-${id}" placeholder="Valor (R$)">
+    <input type="text" id="lote-obs-${id}" placeholder="Observação (opcional)">
+    <button title="Remover linha" onclick="removeLoteRow(${id})">✕</button>
+  `;
+  document.getElementById('lote-rows').appendChild(div);
+}
+function removeLoteRow(id){
+  const el = document.getElementById('lote-row-'+id);
+  if(el) el.remove();
+}
+function saveLote(){
+  const data = document.getElementById('lote-data').value;
+  if(!data){ showToast('Informe a data', true); return; }
+  const liberadoPor = document.getElementById('lote-liberado').value.trim();
+  const rows = document.querySelectorAll('#lote-rows .lote-row');
+  let criados = 0, ignorados = 0;
+  rows.forEach(row=>{
+    const idSuffix = row.id.replace('lote-row-','');
+    matchColabInput('lote-busca-'+idSuffix, 'lote-colab-'+idSuffix);
+    const colaboradorId = Number(document.getElementById('lote-colab-'+idSuffix).value);
+    const valor = parseFloat(document.getElementById('lote-valor-'+idSuffix).value);
+    if(!colaboradorId || isNaN(valor)){ ignorados++; return; }
+    state.lancamentos.push({
+      id: state.nextLancId++,
+      data, colaboradorId, valor,
+      liberadoPor,
+      obs: document.getElementById('lote-obs-'+idSuffix).value.trim()
+    });
+    criados++;
+  });
+  if(criados===0){ showToast('Preencha ao menos uma linha com colaborador e valor', true); return; }
+  persist();
+  closeLoteModal();
+  renderAll();
+  showToast(`${criados} abastecimento(s) lançado(s)` + (ignorados? `, ${ignorados} linha(s) em branco ignorada(s)`:''));
 }
 
 function removeLancamento(id){
@@ -761,7 +1101,10 @@ function renderLancamentos(){
         <td class="num mono">${fmt(l.valor)}</td>
         <td>${l.liberadoPor||'—'}</td>
         <td>${l.obs||'—'}</td>
-        <td><div class="row-actions"><button title="Excluir" onclick="removeLancamento(${l.id})">🗑</button></div></td>
+        <td><div class="row-actions">
+          <button title="Editar" onclick="openEditLancamento(${l.id})">✎</button>
+          <button title="Excluir" onclick="removeLancamento(${l.id})">🗑</button>
+        </div></td>
       </tr>
     `).join('');
     const [y,m,d] = date.split('-');
@@ -799,9 +1142,10 @@ function confirmFecharMes(){
   const proximo = document.getElementById('fechar-proximo').value.trim();
   if(!proximo){ showToast('Informe o nome do próximo mês', true); return; }
 
+  const mesFechado = state.config.mesReferencia;
   const calcs = state.colaboradores.map(c=>({c, calc:calcColaborador(c)}));
 
-  state.historico[state.config.mesReferencia] = {
+  state.historico[mesFechado] = {
     config: {...state.config},
     colaboradores: JSON.parse(JSON.stringify(state.colaboradores)),
     lancamentos: JSON.parse(JSON.stringify(state.lancamentos)),
@@ -816,7 +1160,7 @@ function confirmFecharMes(){
     ...c,
     faltas: 0,
     descontoMesAnterior: calc.saldo<0 ? round2(-calc.saldo) : 0,
-    obs: calc.saldo<0 ? `Excesso de ${state.config.mesReferencia} descontado: ${fmt(-calc.saldo)}` : ''
+    obs: calc.saldo<0 ? `Excesso de ${mesFechado} descontado: ${fmt(-calc.saldo)}` : ''
   }));
   state.lancamentos = [];
   state.config.mesReferencia = proximo;
@@ -824,38 +1168,35 @@ function confirmFecharMes(){
   persist();
   closeFecharMes();
   renderAll();
-  showToast('Mês fechado e arquivado. Bem-vindo a ' + proximo + '!');
+  exportHistoricoCSV(mesFechado);
+  showToast('Mês fechado, arquivado e CSV baixado. Bem-vindo a ' + proximo + '!');
 }
 
 function renderHistorico(){
   const sel = document.getElementById('h-mes');
+  const selecaoAtual = sel.value;
   const meses = Object.keys(state.historico);
   document.getElementById('hist-empty').style.display = meses.length? 'none':'block';
   sel.innerHTML = '<option value="">Selecione um mês arquivado</option>' + meses.map(m=>`<option value="${m}">${m}</option>`).join('');
+  sel.value = selecaoAtual;
   const chosen = sel.value;
   const content = document.getElementById('hist-content');
   if(!chosen || !state.historico[chosen]){ content.innerHTML=''; return; }
   const h = state.historico[chosen];
-  const rows = h.colaboradores.map(c=>{
-    const dias = (c.diasIndividual && c.diasIndividual>0) ? c.diasIndividual : h.config.diasPadrao;
-    const litros = c.kmL>0 ? round2((c.kmDia*dias)/c.kmL) : 0;
-    const bruto = round2(litros*h.config.precoLitro);
-    const custoDia = dias>0? round2(bruto/dias):0;
-    const desconto = round2(custoDia*(c.faltas||0));
-    const limite = Math.max(70, round2(bruto-desconto-(c.descontoMesAnterior||0)+(c.usoExtra||0)));
-    const usado = round2(h.lancamentos.filter(l=>l.colaboradorId===c.id).reduce((s,l)=>s+Number(l.valor||0),0));
-    const saldo = round2(limite-usado);
-    return `<tr><td>${c.nome}</td><td class="mono">${c.placa}</td><td class="num mono">${c.faltas||0}</td>
-      <td class="num mono">${fmt(limite)}</td><td class="num mono">${fmt(usado)}</td>
-      <td class="num mono">${saldo<0?`<span class="badge badge-danger">${fmt(saldo)}</span>`:fmt(saldo)}</td></tr>`;
-  }).join('');
+  const linhas = historicoLinhas(h);
+  const rows = linhas.map(r=>`<tr><td>${r.nome}</td><td class="mono">${r.placa}</td><td class="num mono">${r.faltas}</td>
+      <td class="num mono">${fmt(r.limite)}</td><td class="num mono">${fmt(r.usado)}</td>
+      <td class="num mono">${saldoCellHTML(r.saldo, r.limite)}</td></tr>`).join('');
   content.innerHTML = `
-    <div class="metrics" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px;">
-      <div class="metric plate"><div class="label">Limite total</div><div class="value mono">${fmt(h.totais.limite)}</div></div>
-      <div class="metric plate"><div class="label">Usado</div><div class="value mono forge">${fmt(h.totais.usado)}</div></div>
-      <div class="metric plate"><div class="label">Saldo</div><div class="value mono ${h.totais.saldo<0?'danger':'ok'}">${fmt(h.totais.saldo)}</div></div>
+    <div class="section-head">
+      <div class="metrics" style="grid-template-columns:repeat(3,1fr);margin-bottom:0;flex:1;">
+        <div class="metric plate"><div class="label">Limite total</div><div class="value mono">${fmt(h.totais.limite)}</div></div>
+        <div class="metric plate"><div class="label">Usado</div><div class="value mono forge">${fmt(h.totais.usado)}</div></div>
+        <div class="metric plate"><div class="label">Saldo</div><div class="value mono ${h.totais.saldo<0?'danger':'ok'}">${fmt(h.totais.saldo)}</div></div>
+      </div>
+      <button class="btn secondary" onclick="exportHistoricoCSV('${chosen}')">⬇ Baixar CSV deste mês</button>
     </div>
-    <div class="plate" style="overflow-x:auto;">
+    <div class="plate" style="overflow-x:auto;margin-top:16px;">
       <table>
         <thead><tr><th>Colaborador</th><th>Placa</th><th class="num">Faltas</th><th class="num">Limite</th><th class="num">Usado</th><th class="num">Saldo</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -864,11 +1205,129 @@ function renderHistorico(){
   `;
 }
 
+// ---------- HISTÓRICO: helpers de formato (mês fechado pelo app x mês importado da planilha) ----------
+function historicoLinhas(h){
+  if(h.colaboradores){
+    return h.colaboradores.map(c=>{
+      const dias = (c.diasIndividual && c.diasIndividual>0) ? c.diasIndividual : h.config.diasPadrao;
+      const litros = c.kmL>0 ? round2((c.kmDia*dias)/c.kmL) : 0;
+      const bruto = round2(litros*h.config.precoLitro);
+      const custoDia = dias>0? round2(bruto/dias):0;
+      const desconto = round2(custoDia*(c.faltas||0));
+      const limite = Math.max(70, round2(bruto-desconto-(c.descontoMesAnterior||0)+(c.usoExtra||0)));
+      const usado = round2(h.lancamentos.filter(l=>l.colaboradorId===c.id).reduce((s,l)=>s+Number(l.valor||0),0));
+      return {nome:c.nome, placa:c.placa, faltas:c.faltas||0, limite, usado, saldo:round2(limite-usado)};
+    });
+  }
+  // Mês importado diretamente da planilha (sem os dados de KM/faltas por trás) — usa o resumo já calculado.
+  return (h.resumo||[]).map(r=>({nome:r.nome, placa:r.placa, faltas:'—', limite:r.limite, usado:r.usado, saldo:r.saldo}));
+}
+
+function resolveLancamento(h, l){
+  if(h.colaboradores){
+    const c = h.colaboradores.find(x=>x.id===l.colaboradorId);
+    return {data:l.data, nome:c?c.nome:'—', placa:c?c.placa:'—', valor:l.valor, liberadoPor:l.liberadoPor||'', obs:l.obs||''};
+  }
+  return {data:l.data, nome:l.nome, placa:l.placa, valor:l.valor, liberadoPor:l.liberadoPor||'', obs:l.obs||''};
+}
+
+function csvEsc(v){
+  const s = (v==null?'':String(v));
+  return /[;"\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+function fmtDateBR(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+function downloadFile(filename, content){
+  const blob = new Blob(['\ufeff'+content], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function buildCSV(mes, h){
+  const linhas = historicoLinhas(h);
+  let csv = `Mês;${mes}\n\n`;
+  csv += 'RESUMO POR COLABORADOR\n';
+  csv += 'Colaborador;Placa;Faltas;Limite;Usado;Saldo\n';
+  linhas.forEach(r=>{ csv += `${csvEsc(r.nome)};${csvEsc(r.placa)};${r.faltas};${String(r.limite).replace('.',',')};${String(r.usado).replace('.',',')};${String(r.saldo).replace('.',',')}\n`; });
+  csv += `TOTAL;;;${String(h.totais.limite).replace('.',',')};${String(h.totais.usado).replace('.',',')};${String(h.totais.saldo).replace('.',',')}\n\n`;
+  csv += 'ABASTECIMENTOS\n';
+  csv += 'Data;Colaborador;Placa;Valor;Liberado por;Observação\n';
+  (h.lancamentos||[]).slice().sort((a,b)=>a.data.localeCompare(b.data)).forEach(l=>{
+    const r = resolveLancamento(h,l);
+    csv += `${fmtDateBR(r.data)};${csvEsc(r.nome)};${csvEsc(r.placa)};${String(r.valor).replace('.',',')};${csvEsc(r.liberadoPor)};${csvEsc(r.obs)}\n`;
+  });
+  return csv;
+}
+function exportHistoricoCSV(mes){
+  const h = state.historico[mes];
+  if(!h){ showToast('Selecione um mês', true); return; }
+  downloadFile(`combustivel_${mes.replace('/','-')}.csv`, buildCSV(mes,h));
+}
+function exportMesAtualCSV(){
+  const calcs = state.colaboradores.map(c=>({c, calc:calcColaborador(c)}));
+  const h = {
+    config: state.config,
+    colaboradores: state.colaboradores,
+    lancamentos: state.lancamentos,
+    totais: {
+      limite: round2(calcs.reduce((s,x)=>s+x.calc.limite,0)),
+      usado: round2(calcs.reduce((s,x)=>s+x.calc.usado,0)),
+      saldo: round2(calcs.reduce((s,x)=>s+x.calc.saldo,0))
+    }
+  };
+  downloadFile(`combustivel_${state.config.mesReferencia.replace('/','-')}_parcial.csv`, buildCSV(state.config.mesReferencia, h));
+  showToast('CSV do mês atual baixado');
+}
+
+// ---------- BACKUP COMPLETO (JSON) ----------
+function exportBackupJSON(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const hoje = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = `controle_combustivel_backup_${hoje}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Backup completo baixado');
+}
+
+function importBackupJSON(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    let parsed;
+    try{ parsed = JSON.parse(e.target.result); }
+    catch(err){ showToast('Arquivo inválido: não é um backup deste app', true); return; }
+    if(!parsed || !parsed.config || !Array.isArray(parsed.colaboradores)){
+      showToast('Arquivo inválido: não é um backup deste app', true);
+      return;
+    }
+    if(!confirm('Isso vai substituir TODOS os dados atuais (colaboradores, abastecimentos e histórico) pelo conteúdo do backup. Deseja continuar?')) return;
+    parsed.historico = parsed.historico || {};
+    parsed.lancamentos = parsed.lancamentos || [];
+    parsed.nextColabId = parsed.nextColabId || (parsed.colaboradores.reduce((m,c)=>Math.max(m,c.id||0),0)+1);
+    parsed.nextLancId = parsed.nextLancId || (parsed.lancamentos.reduce((m,l)=>Math.max(m,l.id||0),0)+1);
+    state = parsed;
+    persist();
+    renderAll();
+    showToast('Backup restaurado com sucesso');
+  };
+  reader.onerror = ()=> showToast('Não foi possível ler o arquivo', true);
+  reader.readAsText(file);
+  document.getElementById('backup-input').value = '';
+}
+
 // ---------- RENDER ALL ----------
 function renderAll(){
   renderHeader();
   renderMetrics();
   renderColab();
+  if(document.getElementById('tab-calc').classList.contains('active')) renderCalc();
   if(document.getElementById('tab-abast').classList.contains('active')) renderLancamentos();
   if(document.getElementById('tab-hist').classList.contains('active')) renderHistorico();
 }
