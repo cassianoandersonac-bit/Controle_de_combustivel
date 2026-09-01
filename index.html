@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Combustível</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14171A;
+    --surface:#1C2024;
+    --surface-2:#22262B;
+    --border:#2C3238;
+    --text:#E8EAED;
+    --text-dim:#8B9299;
+    --steel:#5B84A0;
+    --forge:#D9822B;
+    --danger:#C0483E;
+    --ok:#4C8B5F;
+    --plate: repeating-linear-gradient(135deg, rgba(255,255,255,.015) 0 2px, transparent 2px 6px);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+  h1,h2,h3,.display{font-family:'Big Shoulders Display',sans-serif;font-weight:800;letter-spacing:.02em;text-transform:uppercase;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  .plate{ position:relative;background:var(--surface);border:1px solid var(--border); }
+  .plate::before,.plate::after{ content:'';position:absolute;width:10px;height:10px;border:2px solid var(--steel);opacity:.6; }
+  .plate::before{top:-1px;left:-1px;border-right:none;border-bottom:none;}
+  .plate::after{bottom:-1px;right:-1px;border-left:none;border-top:none;}
+
+  header{
+    display:flex;align-items:center;justify-content:space-between;padding:16px 28px;flex-wrap:wrap;gap:10px;
+    border-bottom:1px solid var(--border);background:var(--surface);
+    background-image: var(--plate);
+  }
+  header h1{font-size:22px;margin:0;}
+  header .tag{color:var(--text-dim);font-size:11px;letter-spacing:.08em;margin-left:10px;}
+  .header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .pill{
+    background:var(--surface-2);border:1px solid var(--border);padding:8px 14px;border-radius:2px;
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-dim);
+  }
+  .pill b{color:var(--text);}
+  .btn{
+    background:var(--steel);color:#0B1215;border:none;padding:10px 16px;font-family:'Big Shoulders Display',sans-serif;
+    font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:13px;cursor:pointer;border-radius:2px;
+    transition:background .15s;
+  }
+  .btn:hover{background:#6f9ab8;}
+  .btn.forge{background:var(--forge);}
+  .btn.forge:hover{background:#e79544;}
+  .btn.small{padding:6px 10px;font-size:11px;}
+  .btn.secondary{background:transparent;border:1px solid var(--border);color:var(--text-dim);}
+  .btn.secondary:hover{color:var(--text);border-color:var(--steel);}
+  .btn.danger{background:transparent;border:1px solid var(--danger);color:#E08078;}
+  .btn.danger:hover{background:rgba(192,72,62,.15);}
+
+  main{max-width:1320px;margin:0 auto;padding:22px 28px 60px;}
+
+  .metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+  .metric{padding:14px 16px;}
+  .metric .label{color:var(--text-dim);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;}
+  .metric .value{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;}
+  .metric .value.danger{color:var(--danger);}
+  .metric .value.forge{color:var(--forge);}
+  .metric .value.ok{color:var(--ok);}
+
+  .config-bar{display:flex;gap:24px;align-items:flex-end;padding:16px 20px;margin-bottom:20px;flex-wrap:wrap;}
+  .config-bar .field{min-width:160px;}
+  .config-bar .field label{display:block;font-size:10.5px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+  .config-bar .field input{
+    width:100%;padding:9px 11px;background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+    font-family:'IBM Plex Mono',monospace;font-size:14px;border-radius:2px;
+  }
+  .config-bar .field input:focus{outline:none;border-color:var(--steel);}
+  .config-bar .hint{color:var(--text-dim);font-size:11.5px;flex:1;min-width:200px;}
+
+  .tabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--border);}
+  .tab-btn{
+    background:none;border:none;color:var(--text-dim);padding:11px 18px;font-family:'Big Shoulders Display',sans-serif;
+    font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:14px;cursor:pointer;border-bottom:2px solid transparent;
+  }
+  .tab-btn.active{color:var(--text);border-bottom-color:var(--forge);}
+  .tab-btn:hover{color:var(--text);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .panel-title{font-size:12px;letter-spacing:.1em;color:var(--text-dim);text-transform:uppercase;margin:0 0 14px;}
+  .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+
+  .add-panel{padding:20px 22px;margin-bottom:20px;}
+  .form-row{display:grid;gap:10px;margin-bottom:10px;}
+  .form-row.lanc{grid-template-columns:1.3fr 1.6fr 1fr 1.2fr 1.4fr;}
+  .field label{display:block;font-size:10.5px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
+  .field input,.field select{
+    width:100%;padding:9px 11px;background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+    font-family:'Inter',sans-serif;font-size:13.5px;border-radius:2px;
+  }
+  .field input:focus,.field select:focus{outline:none;border-color:var(--steel);}
+  .add-actions{display:flex;align-items:center;justify-content:space-between;margin-top:12px;}
+  .hint{color:var(--text-dim);font-size:11.5px;}
+
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+  .toolbar input[type=text]{
+    background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:9px 12px;
+    font-family:'Inter',sans-serif;font-size:13px;border-radius:2px;min-width:220px;flex:1;
+  }
+  select.toolbar-select{
+    background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:9px 12px;
+    font-family:'Inter',sans-serif;font-size:13px;border-radius:2px;
+  }
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  thead th{
+    text-align:left;color:var(--text-dim);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+    padding:8px 10px;border-bottom:1px solid var(--border);background:var(--surface-2);white-space:nowrap;
+  }
+  tbody td{padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  tbody tr:hover{background:var(--surface-2);}
+  .num{font-family:'IBM Plex Mono',monospace;text-align:right;}
+  .badge{padding:3px 8px;border-radius:2px;font-size:10px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;white-space:nowrap;}
+  .badge-danger{background:rgba(192,72,62,.18);color:#E08078;}
+  .badge-warn{background:rgba(217,130,43,.18);color:var(--forge);}
+  .badge-ok{background:rgba(76,139,95,.18);color:#7FC292;}
+  .row-actions{display:flex;gap:4px;justify-content:flex-end;white-space:nowrap;}
+  .row-actions button{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:12px;padding:3px 6px;}
+  .row-actions button:hover{color:var(--steel);}
+
+  .totals-row td{border-top:2px solid var(--border);border-bottom:none;font-weight:700;background:var(--surface-2);}
+
+  .day-group{margin-bottom:16px;}
+  .day-header{
+    display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--surface-2);
+    border:1px solid var(--border);border-bottom:none;font-family:'IBM Plex Mono',monospace;font-size:13px;
+  }
+  .day-header .day-date{font-weight:600;color:var(--text);}
+  .day-header .day-total{margin-left:auto;color:var(--text);font-weight:600;}
+
+  .overlay{ display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center;z-index:50;padding:20px; }
+  .overlay.open{display:flex;}
+  .modal{width:520px;max-width:100%;max-height:88vh;overflow-y:auto;padding:26px;}
+  .modal h2{font-size:20px;margin:0 0 6px;}
+  .modal .sub{color:var(--text-dim);font-size:12px;margin-bottom:18px;}
+  .field{margin-bottom:12px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .modal-actions{display:flex;gap:10px;margin-top:18px;justify-content:flex-end;}
+  .calc-preview{background:var(--surface-2);border:1px solid var(--border);border-radius:2px;padding:12px 14px;margin:14px 0;font-size:12.5px;color:var(--text-dim);}
+  .calc-preview b{color:var(--text);}
+  .calc-preview .line{display:flex;justify-content:space-between;padding:3px 0;}
+
+  .empty{padding:60px 20px;text-align:center;color:var(--text-dim);}
+  .empty .display{font-size:24px;color:var(--text);margin-bottom:8px;}
+
+  .toast{
+    position:fixed;bottom:28px;left:28px;background:var(--surface);border:1px solid var(--steel);padding:12px 18px;
+    border-radius:2px;font-size:13px;display:none;z-index:60;
+  }
+  .toast.show{display:block;}
+  .toast.error{border-color:var(--danger);color:#E08078;}
+
+  .archive-select{margin-bottom:18px;}
+
+  @media (max-width:900px){
+    .metrics{grid-template-columns:repeat(2,1fr);}
+    .metrics .metric:nth-child(5){grid-column:span 2;}
+    .form-row.lanc{grid-template-columns:1fr 1fr;}
+    main{padding:16px 14px 60px;}
+    table{font-size:11px;}
+  }
+  :focus-visible{outline:2px solid var(--steel);outline-offset:2px;}
+</style>
+</head>
+<body>
+
+  <header>
+    <div style="display:flex;align-items:baseline;">
+      <h1>Controle de Combustível</h1>
+      <span class="tag">CONTROLE DE COMBUSTÍVEL &mdash; FÁBRICA &amp; LOJA</span>
+    </div>
+    <div class="header-right">
+      <span class="pill">Mês: <b id="hdr-mes">—</b></span>
+      <button class="btn secondary small" onclick="openConfigMes()">Editar mês</button>
+      <button class="btn forge small" onclick="openFecharMes()">Fechar mês</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="metrics">
+      <div class="metric plate">
+        <div class="label">Colaboradores</div>
+        <div class="value mono" id="m-colab">0</div>
+      </div>
+      <div class="metric plate">
+        <div class="label">Limite total</div>
+        <div class="value mono" id="m-limite">R$ 0,00</div>
+      </div>
+      <div class="metric plate">
+        <div class="label">Usado no mês</div>
+        <div class="value mono forge" id="m-usado">R$ 0,00</div>
+      </div>
+      <div class="metric plate">
+        <div class="label">Saldo total</div>
+        <div class="value mono ok" id="m-saldo">R$ 0,00</div>
+      </div>
+      <div class="metric plate">
+        <div class="label">Estourados</div>
+        <div class="value mono danger" id="m-estourado">0</div>
+      </div>
+    </div>
+
+    <div class="config-bar plate">
+      <div class="field">
+        <label>Preço do litro (R$)</label>
+        <input type="number" step="0.01" id="cfg-preco" onchange="updateConfig()">
+      </div>
+      <div class="field">
+        <label>Dias padrão do mês</label>
+        <input type="number" id="cfg-dias" onchange="updateConfig()">
+      </div>
+      <div class="hint">Altere aqui para recalcular automaticamente o limite de todos os colaboradores.</div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="colab" onclick="switchTab('colab')">Colaboradores</button>
+      <button class="tab-btn" data-tab="abast" onclick="switchTab('abast')">Abastecimentos</button>
+      <button class="tab-btn" data-tab="hist" onclick="switchTab('hist')">Histórico de meses</button>
+    </div>
+
+    <!-- COLABORADORES -->
+    <div class="tab-panel active" id="tab-colab">
+      <div class="section-head">
+        <div class="toolbar" style="margin-bottom:0;flex:1;">
+          <input type="text" id="c-busca" placeholder="Buscar colaborador ou placa..." oninput="renderColab()">
+        </div>
+        <button class="btn forge" onclick="openColabModal()">+ Novo colaborador</button>
+      </div>
+      <div class="plate" style="overflow-x:auto;">
+        <table>
+          <thead><tr>
+            <th>Nº</th><th>Colaborador</th><th>Placa</th><th class="num">KM/dia</th><th class="num">KM/L</th>
+            <th class="num">Dias</th><th class="num">Faltas</th><th class="num">Bruto</th><th class="num">Desc. faltas</th>
+            <th class="num">Desc. mês ant.</th><th class="num">Extra</th><th class="num">Limite</th>
+            <th class="num">Usado</th><th class="num">Saldo</th><th></th>
+          </tr></thead>
+          <tbody id="colab-body"></tbody>
+          <tfoot id="colab-foot"></tfoot>
+        </table>
+      </div>
+      <div class="empty plate" id="colab-empty" style="display:none;">
+        <div class="display">NENHUM COLABORADOR CADASTRADO</div>
+        <div>Clique em "Novo colaborador" para começar.</div>
+      </div>
+    </div>
+
+    <!-- ABASTECIMENTOS -->
+    <div class="tab-panel" id="tab-abast">
+      <div class="add-panel plate">
+        <div class="panel-title">Novo abastecimento</div>
+        <div class="form-row lanc">
+          <div class="field">
+            <label>Data</label>
+            <input type="date" id="a-data">
+          </div>
+          <div class="field">
+            <label>Colaborador</label>
+            <select id="a-colab"></select>
+          </div>
+          <div class="field">
+            <label>Valor (R$)</label>
+            <input type="number" step="0.01" id="a-valor" placeholder="0,00">
+          </div>
+          <div class="field">
+            <label>Liberado por</label>
+            <input type="text" id="a-liberado" placeholder="Ex: Anderson">
+          </div>
+          <div class="field">
+            <label>Observação</label>
+            <input type="text" id="a-obs" placeholder="Opcional">
+          </div>
+        </div>
+        <div class="add-actions">
+          <span class="hint">O saldo do colaborador é recalculado automaticamente ao lançar um abastecimento.</span>
+          <button class="btn forge" onclick="addLancamento()">+ Adicionar</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="l-busca" placeholder="Colaborador, placa ou observação..." oninput="renderLancamentos()">
+        <select class="toolbar-select" id="l-colab-filter" onchange="renderLancamentos()">
+          <option value="todos">Todos os colaboradores</option>
+        </select>
+      </div>
+
+      <div id="lanc-groups"></div>
+      <div class="empty plate" id="lanc-empty" style="display:none;">
+        <div class="display">NENHUM ABASTECIMENTO NESTE MÊS</div>
+        <div>Lance o primeiro abastecimento acima.</div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div class="tab-panel" id="tab-hist">
+      <div class="archive-select">
+        <select class="toolbar-select" id="h-mes" onchange="renderHistorico()">
+          <option value="">Selecione um mês arquivado</option>
+        </select>
+      </div>
+      <div id="hist-content"></div>
+      <div class="empty plate" id="hist-empty">
+        <div class="display">SEM MESES ARQUIVADOS</div>
+        <div>Use "Fechar mês" para arquivar o mês atual e começar o próximo.</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL COLABORADOR -->
+  <div class="overlay" id="overlay-colab">
+    <div class="modal plate">
+      <h2 id="colab-modal-title">Novo colaborador</h2>
+      <div class="sub">Preencha os dados do veículo. Bruto, desconto e limite são calculados automaticamente.</div>
+      <input type="hidden" id="cl-id">
+      <div class="field">
+        <label>Nome</label>
+        <input type="text" id="cl-nome">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Placa</label>
+          <input type="text" id="cl-placa">
+        </div>
+        <div class="field">
+          <label>Dias individual (opcional)</label>
+          <input type="number" id="cl-dias" placeholder="Deixe em branco p/ usar o padrão">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>KM por dia (ida + volta)</label>
+          <input type="number" step="0.1" id="cl-kmdia" oninput="updateColabPreview()">
+        </div>
+        <div class="field">
+          <label>KM por litro do veículo</label>
+          <input type="number" step="0.1" id="cl-kml" oninput="updateColabPreview()">
+        </div>
+      </div>
+      <div class="row3">
+        <div class="field">
+          <label>Faltas no mês</label>
+          <input type="number" id="cl-faltas" value="0" oninput="updateColabPreview()">
+        </div>
+        <div class="field">
+          <label>Desc. mês anterior (R$)</label>
+          <input type="number" step="0.01" id="cl-descant" value="0" oninput="updateColabPreview()">
+        </div>
+        <div class="field">
+          <label>Uso extra (R$)</label>
+          <input type="number" step="0.01" id="cl-extra" value="0" oninput="updateColabPreview()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Observações</label>
+        <input type="text" id="cl-obs" placeholder="Opcional">
+      </div>
+      <div class="calc-preview" id="cl-preview"></div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeColabModal()">Cancelar</button>
+        <button class="btn forge" onclick="saveColab()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIG MES -->
+  <div class="overlay" id="overlay-mes">
+    <div class="modal plate" style="width:400px;">
+      <h2>Mês de referência</h2>
+      <div class="field">
+        <label>Nome do mês</label>
+        <input type="text" id="mes-nome" placeholder="Ex: Setembro/2026">
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeConfigMes()">Cancelar</button>
+        <button class="btn forge" onclick="saveConfigMes()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FECHAR MES -->
+  <div class="overlay" id="overlay-fechar">
+    <div class="modal plate">
+      <h2>Fechar mês</h2>
+      <div class="sub">Isso arquiva o mês atual no Histórico e prepara o próximo mês: faltas zeradas, abastecimentos limpos, e saldo negativo vira desconto do mês seguinte.</div>
+      <div class="calc-preview" id="fechar-preview"></div>
+      <div class="field">
+        <label>Nome do próximo mês</label>
+        <input type="text" id="fechar-proximo" placeholder="Ex: Outubro/2026">
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeFecharMes()">Cancelar</button>
+        <button class="btn forge" onclick="confirmFecharMes()">Confirmar fechamento</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'controle_combustivel_v1';
+
+function seedData(){
+  const colaboradores = [
+    ['Renato José da Silva','QGE5A36',46,35,null,9,0,0],
+    ['Alex Laranjeira da Cruz','OJR6I98',6,35,null,0,0,0],
+    ['Erika de Souza Raujo Medeiros','TSR4J48',28,30,25,0,0,0],
+    ['Rivania Vicente da Silva Nunews','OFA3J03',15,11,null,0,0,0],
+    ['Jeferson Natan Silva Dantas','QG87I65',32,30,25,0,0,0],
+    ['Rafael Fernandes da Silva','QGU7A32',46,35,25,0,5.39,0],
+    ['Rogério Francisco da Silva','QGS7583',46,35,null,0,0,0],
+    ['Anderson Cassiano de Souza','QGI4B16',11,12,22,10,0,80],
+    ['Leonardo Pedro Simplicio','QGS9920',64,40,null,0,0,0],
+    ['Evandro Barreto','QGR4B08',5,35,null,0,0,0],
+    ['Cleiton de Azevedo Tomaz','QGV6F82',46,35,null,2,0,0],
+    ['João Vitor Angelo de Lima','RQI7D80',26,35,null,0,12.12,0],
+    ['Ivanilson Basílio de Sales','HWK8G94',11,11,25,0,0,0],
+    ['Edilson Adalto de Lima','IOJ5J55',2,11,24,0,0,0],
+    ['José Abdenego Filho','RQK4E69',36,50,24,0,0,0],
+    ['Jarrison Bertoldo Araujo Pereira','TSZ0F86',22,29,25,0,0,0],
+    ['Evaldo Fragoso da Silva','AMC5573',8,35,null,0,0,0],
+    ['Josenaldo da Silva Mariano','MYW5B37',16.4,40,24,0,0,0],
+    ['Leonardo Santana da Silva','LCC8790',8,11,24,0,0,0],
+    ['Rafael Tavares da Silva','MYX9A66',6.6,14,null,0,0,0],
+    ['Leonardo Rodrigo da Silva','QGA4I50',14,30,null,0,12.32,0],
+    ['Sandro de Oliveira Silva','RQF6D94',6,40,null,0,0,0],
+    ['Samuel Francelino Paulo','NOF6868',62,35,24,0,76.52,0],
+    ['Revesson Daniel de Lima','OWE3J19',8,40,null,0,0,0],
+    ['Jailson Gomes de Oliveira','FWU-5J43',64,40,null,0,0,0]
+  ].map((r,i)=>({
+    id: i+1, nome:r[0], placa:r[1], kmDia:r[2], kmL:r[3], diasIndividual:r[4],
+    faltas:r[5], descontoMesAnterior:r[6], usoExtra:r[7], obs:''
+  }));
+  return {
+    config:{ mesReferencia:'Setembro/2026', precoLitro:6.69, diasPadrao:23 },
+    colaboradores,
+    lancamentos:[],
+    historico:{},
+    nextColabId: colaboradores.length+1,
+    nextLancId: 1
+  };
+}
+
+let state = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  const seeded = seedData();
+  save(seeded);
+  return seeded;
+}
+function save(s){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+  catch(e){ showToast('Não foi possível salvar (armazenamento local indisponível)', true); }
+}
+function persist(){ save(state); }
+
+function fmt(v){
+  return (v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+}
+function round2(v){ return Math.round((v+Number.EPSILON)*100)/100; }
+
+function showToast(msg, error){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (error?' error':'');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.className='toast', 2400);
+}
+
+// ---------- CÁLCULOS ----------
+function calcColaborador(c){
+  const dias = (c.diasIndividual && c.diasIndividual>0) ? c.diasIndividual : state.config.diasPadrao;
+  const litros = c.kmL>0 ? round2((c.kmDia*dias)/c.kmL) : 0;
+  const bruto = round2(litros*state.config.precoLitro);
+  const custoDia = dias>0 ? round2(bruto/dias) : 0;
+  const desconto = round2(custoDia*(c.faltas||0));
+  const diasTrabalhados = Math.max(0, dias-(c.faltas||0));
+  const limiteBruto = bruto - desconto - (c.descontoMesAnterior||0) + (c.usoExtra||0);
+  const limite = Math.max(70, round2(limiteBruto));
+  const usado = round2(state.lancamentos.filter(l=>l.colaboradorId===c.id).reduce((s,l)=>s+Number(l.valor||0),0));
+  const saldo = round2(limite-usado);
+  return {dias, litros, bruto, custoDia, desconto, diasTrabalhados, limite, usado, saldo};
+}
+
+// ---------- TABS ----------
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='abast') renderLancamentos();
+  if(tab==='hist') renderHistorico();
+}
+
+// ---------- HEADER / CONFIG ----------
+function renderHeader(){
+  document.getElementById('hdr-mes').textContent = state.config.mesReferencia;
+  document.getElementById('cfg-preco').value = state.config.precoLitro;
+  document.getElementById('cfg-dias').value = state.config.diasPadrao;
+}
+function updateConfig(){
+  const preco = parseFloat(document.getElementById('cfg-preco').value);
+  const dias = parseInt(document.getElementById('cfg-dias').value,10);
+  if(!isNaN(preco)) state.config.precoLitro = preco;
+  if(!isNaN(dias)) state.config.diasPadrao = dias;
+  persist();
+  renderAll();
+}
+function openConfigMes(){
+  document.getElementById('mes-nome').value = state.config.mesReferencia;
+  document.getElementById('overlay-mes').classList.add('open');
+}
+function closeConfigMes(){ document.getElementById('overlay-mes').classList.remove('open'); }
+function saveConfigMes(){
+  const v = document.getElementById('mes-nome').value.trim();
+  if(!v){ showToast('Informe o nome do mês', true); return; }
+  state.config.mesReferencia = v;
+  persist();
+  closeConfigMes();
+  renderHeader();
+  showToast('Mês atualizado');
+}
+
+// ---------- METRICS ----------
+function renderMetrics(){
+  const calcs = state.colaboradores.map(calcColaborador);
+  document.getElementById('m-colab').textContent = state.colaboradores.length;
+  document.getElementById('m-limite').textContent = fmt(calcs.reduce((s,c)=>s+c.limite,0));
+  document.getElementById('m-usado').textContent = fmt(calcs.reduce((s,c)=>s+c.usado,0));
+  const saldoTotal = calcs.reduce((s,c)=>s+c.saldo,0);
+  const saldoEl = document.getElementById('m-saldo');
+  saldoEl.textContent = fmt(saldoTotal);
+  saldoEl.className = 'value mono ' + (saldoTotal<0?'danger':'ok');
+  document.getElementById('m-estourado').textContent = calcs.filter(c=>c.saldo<0).length;
+}
+
+// ---------- COLABORADORES ----------
+function renderColab(){
+  const busca = (document.getElementById('c-busca').value||'').toLowerCase();
+  const body = document.getElementById('colab-body');
+  const list = state.colaboradores
+    .map(c=>({c, calc:calcColaborador(c)}))
+    .filter(({c})=> !busca || c.nome.toLowerCase().includes(busca) || c.placa.toLowerCase().includes(busca));
+
+  document.getElementById('colab-empty').style.display = state.colaboradores.length===0 ? 'block':'none';
+
+  body.innerHTML = list.map(({c,calc},idx)=>`
+    <tr>
+      <td>${idx+1}</td>
+      <td>${c.nome}</td>
+      <td class="mono">${c.placa}</td>
+      <td class="num mono">${c.kmDia}</td>
+      <td class="num mono">${c.kmL}</td>
+      <td class="num mono">${calc.dias}${c.diasIndividual?'':''}</td>
+      <td class="num mono">${c.faltas||0}</td>
+      <td class="num mono">${fmt(calc.bruto)}</td>
+      <td class="num mono">${fmt(calc.desconto)}</td>
+      <td class="num mono">${fmt(c.descontoMesAnterior||0)}</td>
+      <td class="num mono">${fmt(c.usoExtra||0)}</td>
+      <td class="num mono"><b>${fmt(calc.limite)}</b></td>
+      <td class="num mono">${fmt(calc.usado)}</td>
+      <td class="num mono">${calc.saldo<0?`<span class="badge badge-danger">${fmt(calc.saldo)}</span>`:fmt(calc.saldo)}</td>
+      <td>
+        <div class="row-actions">
+          <button title="Editar" onclick="openColabModal(${c.id})">✎</button>
+          <button title="Excluir" onclick="removeColab(${c.id})">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  const totCalcs = state.colaboradores.map(calcColaborador);
+  const foot = document.getElementById('colab-foot');
+  if(state.colaboradores.length){
+    foot.innerHTML = `<tr class="totals-row">
+      <td colspan="6">TOTAIS</td>
+      <td class="num mono">${totCalcs.reduce((s,c)=>s+c.diasTrabalhados,0)===0?'':state.colaboradores.reduce((s,c)=>s+(c.faltas||0),0)}</td>
+      <td class="num mono">${fmt(totCalcs.reduce((s,c)=>s+c.bruto,0))}</td>
+      <td class="num mono">${fmt(totCalcs.reduce((s,c)=>s+c.desconto,0))}</td>
+      <td class="num mono">${fmt(state.colaboradores.reduce((s,c)=>s+(c.descontoMesAnterior||0),0))}</td>
+      <td class="num mono">${fmt(state.colaboradores.reduce((s,c)=>s+(c.usoExtra||0),0))}</td>
+      <td class="num mono">${fmt(totCalcs.reduce((s,c)=>s+c.limite,0))}</td>
+      <td class="num mono">${fmt(totCalcs.reduce((s,c)=>s+c.usado,0))}</td>
+      <td class="num mono">${fmt(totCalcs.reduce((s,c)=>s+c.saldo,0))}</td>
+      <td></td>
+    </tr>`;
+  } else { foot.innerHTML=''; }
+
+  populateColabSelects();
+}
+
+function openColabModal(id){
+  document.getElementById('colab-modal-title').textContent = id ? 'Editar colaborador' : 'Novo colaborador';
+  document.getElementById('cl-id').value = id||'';
+  if(id){
+    const c = state.colaboradores.find(x=>x.id===id);
+    document.getElementById('cl-nome').value = c.nome;
+    document.getElementById('cl-placa').value = c.placa;
+    document.getElementById('cl-dias').value = c.diasIndividual||'';
+    document.getElementById('cl-kmdia').value = c.kmDia;
+    document.getElementById('cl-kml').value = c.kmL;
+    document.getElementById('cl-faltas').value = c.faltas||0;
+    document.getElementById('cl-descant').value = c.descontoMesAnterior||0;
+    document.getElementById('cl-extra').value = c.usoExtra||0;
+    document.getElementById('cl-obs').value = c.obs||'';
+  } else {
+    ['cl-nome','cl-placa','cl-dias','cl-kmdia','cl-kml','cl-obs'].forEach(f=>document.getElementById(f).value='');
+    document.getElementById('cl-faltas').value = 0;
+    document.getElementById('cl-descant').value = 0;
+    document.getElementById('cl-extra').value = 0;
+  }
+  updateColabPreview();
+  document.getElementById('overlay-colab').classList.add('open');
+}
+function closeColabModal(){ document.getElementById('overlay-colab').classList.remove('open'); }
+
+function updateColabPreview(){
+  const dias = parseFloat(document.getElementById('cl-dias').value);
+  const kmDia = parseFloat(document.getElementById('cl-kmdia').value)||0;
+  const kmL = parseFloat(document.getElementById('cl-kml').value)||0;
+  const faltas = parseFloat(document.getElementById('cl-faltas').value)||0;
+  const descAnt = parseFloat(document.getElementById('cl-descant').value)||0;
+  const extra = parseFloat(document.getElementById('cl-extra').value)||0;
+  const diasUsados = (dias>0)?dias:state.config.diasPadrao;
+  const litros = kmL>0 ? round2((kmDia*diasUsados)/kmL) : 0;
+  const bruto = round2(litros*state.config.precoLitro);
+  const custoDia = diasUsados>0 ? round2(bruto/diasUsados) : 0;
+  const desconto = round2(custoDia*faltas);
+  const limite = Math.max(70, round2(bruto-desconto-descAnt+extra));
+  document.getElementById('cl-preview').innerHTML = `
+    <div class="line"><span>Litros no mês</span><b>${litros}</b></div>
+    <div class="line"><span>Valor bruto</span><b>${fmt(bruto)}</b></div>
+    <div class="line"><span>Desconto por faltas</span><b>${fmt(desconto)}</b></div>
+    <div class="line"><span>Limite final</span><b>${fmt(limite)}</b></div>
+  `;
+}
+
+function saveColab(){
+  const nome = document.getElementById('cl-nome').value.trim();
+  const placa = document.getElementById('cl-placa').value.trim();
+  const kmDia = parseFloat(document.getElementById('cl-kmdia').value);
+  const kmL = parseFloat(document.getElementById('cl-kml').value);
+  if(!nome || !placa || isNaN(kmDia) || isNaN(kmL)){
+    showToast('Preencha nome, placa, KM/dia e KM/L', true);
+    return;
+  }
+  const id = document.getElementById('cl-id').value;
+  const diasRaw = document.getElementById('cl-dias').value;
+  const data = {
+    nome, placa,
+    diasIndividual: diasRaw? parseInt(diasRaw,10):null,
+    kmDia, kmL,
+    faltas: parseFloat(document.getElementById('cl-faltas').value)||0,
+    descontoMesAnterior: parseFloat(document.getElementById('cl-descant').value)||0,
+    usoExtra: parseFloat(document.getElementById('cl-extra').value)||0,
+    obs: document.getElementById('cl-obs').value.trim()
+  };
+  if(id){
+    const idx = state.colaboradores.findIndex(x=>x.id===Number(id));
+    state.colaboradores[idx] = {...state.colaboradores[idx], ...data};
+  } else {
+    state.colaboradores.push({id: state.nextColabId++, ...data});
+  }
+  persist();
+  closeColabModal();
+  renderAll();
+  showToast('Colaborador salvo');
+}
+
+function removeColab(id){
+  if(!confirm('Excluir este colaborador? Os abastecimentos lançados para ele também serão removidos.')) return;
+  state.colaboradores = state.colaboradores.filter(c=>c.id!==id);
+  state.lancamentos = state.lancamentos.filter(l=>l.colaboradorId!==id);
+  persist();
+  renderAll();
+  showToast('Colaborador excluído');
+}
+
+// ---------- ABASTECIMENTOS ----------
+function populateColabSelects(){
+  const sel = document.getElementById('a-colab');
+  const filt = document.getElementById('l-colab-filter');
+  const opts = state.colaboradores.map(c=>`<option value="${c.id}">${c.nome} (${c.placa})</option>`).join('');
+  sel.innerHTML = opts;
+  filt.innerHTML = '<option value="todos">Todos os colaboradores</option>' + opts;
+}
+
+function addLancamento(){
+  const data = document.getElementById('a-data').value;
+  const colaboradorId = Number(document.getElementById('a-colab').value);
+  const valor = parseFloat(document.getElementById('a-valor').value);
+  if(!data || !colaboradorId || isNaN(valor)){
+    showToast('Preencha data, colaborador e valor', true);
+    return;
+  }
+  state.lancamentos.push({
+    id: state.nextLancId++,
+    data, colaboradorId, valor,
+    liberadoPor: document.getElementById('a-liberado').value.trim(),
+    obs: document.getElementById('a-obs').value.trim()
+  });
+  persist();
+  ['a-valor','a-liberado','a-obs'].forEach(f=>document.getElementById(f).value='');
+  renderAll();
+  showToast('Abastecimento lançado');
+}
+
+function removeLancamento(id){
+  if(!confirm('Excluir este abastecimento?')) return;
+  state.lancamentos = state.lancamentos.filter(l=>l.id!==id);
+  persist();
+  renderAll();
+  showToast('Abastecimento excluído');
+}
+
+function renderLancamentos(){
+  const busca = (document.getElementById('l-busca').value||'').toLowerCase();
+  const filtroColab = document.getElementById('l-colab-filter').value;
+  const byId = {}; state.colaboradores.forEach(c=>byId[c.id]=c);
+
+  let list = state.lancamentos.map(l=>({l, c:byId[l.colaboradorId]})).filter(x=>x.c);
+  if(filtroColab!=='todos') list = list.filter(x=>String(x.l.colaboradorId)===filtroColab);
+  if(busca) list = list.filter(({l,c})=>
+    c.nome.toLowerCase().includes(busca) || c.placa.toLowerCase().includes(busca) || (l.obs||'').toLowerCase().includes(busca)
+  );
+  list.sort((a,b)=> b.l.data.localeCompare(a.l.data));
+
+  document.getElementById('lanc-empty').style.display = list.length===0 ? 'block':'none';
+
+  const groups = {};
+  list.forEach(item=>{ (groups[item.l.data] = groups[item.l.data]||[]).push(item); });
+
+  document.getElementById('lanc-groups').innerHTML = Object.keys(groups).map(date=>{
+    const items = groups[date];
+    const total = items.reduce((s,x)=>s+Number(x.l.valor||0),0);
+    const rows = items.map(({l,c})=>`
+      <tr>
+        <td>${c.nome}</td>
+        <td class="mono">${c.placa}</td>
+        <td class="num mono">${fmt(l.valor)}</td>
+        <td>${l.liberadoPor||'—'}</td>
+        <td>${l.obs||'—'}</td>
+        <td><div class="row-actions"><button title="Excluir" onclick="removeLancamento(${l.id})">🗑</button></div></td>
+      </tr>
+    `).join('');
+    const [y,m,d] = date.split('-');
+    return `<div class="day-group">
+      <div class="day-header">
+        <span class="day-date">${d}/${m}/${y}</span>
+        <span class="day-total">${fmt(total)}</span>
+      </div>
+      <div class="plate" style="overflow-x:auto;border-top:none;">
+        <table>
+          <thead><tr><th>Colaborador</th><th>Placa</th><th class="num">Valor</th><th>Liberado por</th><th>Obs</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ---------- FECHAR MÊS / HISTÓRICO ----------
+function openFecharMes(){
+  const calcs = state.colaboradores.map(c=>({c, calc:calcColaborador(c)}));
+  const estourados = calcs.filter(x=>x.calc.saldo<0);
+  document.getElementById('fechar-preview').innerHTML = `
+    <div class="line"><span>Mês atual</span><b>${state.config.mesReferencia}</b></div>
+    <div class="line"><span>Abastecimentos lançados</span><b>${state.lancamentos.length}</b></div>
+    <div class="line"><span>Colaboradores com saldo negativo</span><b>${estourados.length}</b></div>
+    ${estourados.length? '<div class="line"><span>O excesso desses colaboradores vira "desconto mês anterior" no próximo mês.</span></div>':''}
+  `;
+  document.getElementById('fechar-proximo').value = '';
+  document.getElementById('overlay-fechar').classList.add('open');
+}
+function closeFecharMes(){ document.getElementById('overlay-fechar').classList.remove('open'); }
+
+function confirmFecharMes(){
+  const proximo = document.getElementById('fechar-proximo').value.trim();
+  if(!proximo){ showToast('Informe o nome do próximo mês', true); return; }
+
+  const calcs = state.colaboradores.map(c=>({c, calc:calcColaborador(c)}));
+
+  state.historico[state.config.mesReferencia] = {
+    config: {...state.config},
+    colaboradores: JSON.parse(JSON.stringify(state.colaboradores)),
+    lancamentos: JSON.parse(JSON.stringify(state.lancamentos)),
+    totais: {
+      limite: round2(calcs.reduce((s,x)=>s+x.calc.limite,0)),
+      usado: round2(calcs.reduce((s,x)=>s+x.calc.usado,0)),
+      saldo: round2(calcs.reduce((s,x)=>s+x.calc.saldo,0))
+    }
+  };
+
+  state.colaboradores = calcs.map(({c,calc})=>({
+    ...c,
+    faltas: 0,
+    descontoMesAnterior: calc.saldo<0 ? round2(-calc.saldo) : 0,
+    obs: calc.saldo<0 ? `Excesso de ${state.config.mesReferencia} descontado: ${fmt(-calc.saldo)}` : ''
+  }));
+  state.lancamentos = [];
+  state.config.mesReferencia = proximo;
+
+  persist();
+  closeFecharMes();
+  renderAll();
+  showToast('Mês fechado e arquivado. Bem-vindo a ' + proximo + '!');
+}
+
+function renderHistorico(){
+  const sel = document.getElementById('h-mes');
+  const meses = Object.keys(state.historico);
+  document.getElementById('hist-empty').style.display = meses.length? 'none':'block';
+  sel.innerHTML = '<option value="">Selecione um mês arquivado</option>' + meses.map(m=>`<option value="${m}">${m}</option>`).join('');
+  const chosen = sel.value;
+  const content = document.getElementById('hist-content');
+  if(!chosen || !state.historico[chosen]){ content.innerHTML=''; return; }
+  const h = state.historico[chosen];
+  const rows = h.colaboradores.map(c=>{
+    const dias = (c.diasIndividual && c.diasIndividual>0) ? c.diasIndividual : h.config.diasPadrao;
+    const litros = c.kmL>0 ? round2((c.kmDia*dias)/c.kmL) : 0;
+    const bruto = round2(litros*h.config.precoLitro);
+    const custoDia = dias>0? round2(bruto/dias):0;
+    const desconto = round2(custoDia*(c.faltas||0));
+    const limite = Math.max(70, round2(bruto-desconto-(c.descontoMesAnterior||0)+(c.usoExtra||0)));
+    const usado = round2(h.lancamentos.filter(l=>l.colaboradorId===c.id).reduce((s,l)=>s+Number(l.valor||0),0));
+    const saldo = round2(limite-usado);
+    return `<tr><td>${c.nome}</td><td class="mono">${c.placa}</td><td class="num mono">${c.faltas||0}</td>
+      <td class="num mono">${fmt(limite)}</td><td class="num mono">${fmt(usado)}</td>
+      <td class="num mono">${saldo<0?`<span class="badge badge-danger">${fmt(saldo)}</span>`:fmt(saldo)}</td></tr>`;
+  }).join('');
+  content.innerHTML = `
+    <div class="metrics" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px;">
+      <div class="metric plate"><div class="label">Limite total</div><div class="value mono">${fmt(h.totais.limite)}</div></div>
+      <div class="metric plate"><div class="label">Usado</div><div class="value mono forge">${fmt(h.totais.usado)}</div></div>
+      <div class="metric plate"><div class="label">Saldo</div><div class="value mono ${h.totais.saldo<0?'danger':'ok'}">${fmt(h.totais.saldo)}</div></div>
+    </div>
+    <div class="plate" style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>Colaborador</th><th>Placa</th><th class="num">Faltas</th><th class="num">Limite</th><th class="num">Usado</th><th class="num">Saldo</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ---------- RENDER ALL ----------
+function renderAll(){
+  renderHeader();
+  renderMetrics();
+  renderColab();
+  if(document.getElementById('tab-abast').classList.contains('active')) renderLancamentos();
+  if(document.getElementById('tab-hist').classList.contains('active')) renderHistorico();
+}
+
+document.getElementById('a-data').valueAsDate = new Date();
+renderAll();
+</script>
+</body>
+</html>
